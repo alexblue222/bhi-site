@@ -1,73 +1,285 @@
 ---
+import { render } from "astro:content";
+import { ArrowRight } from "lucide-react";
 import Layout from "../../layouts/Layout.astro";
-import { PlatformBadge } from "../../components/ui/PlatformBadge";
+import { GlassCard } from "../../components/ui/GlassCard";
 import { MediaTile } from "../../components/ui/MediaTile";
+import { PlatformBadge } from "../../components/ui/PlatformBadge";
 import { SectionHead } from "../../components/ui/SectionHead";
 import { Connect } from "../../components/ui/Connect";
-import { FeedCard } from "../../components/cards/FeedCard";
-import { FEED, firstPartyPosts, getArtist, relTime, type FeedItem } from "../../lib/data";
+import { getBlogFeedItems, getBlogEntry, getArtist } from "../../lib/content";
+import { relTime, type FeedItem } from "../../lib/data";
 
-export function getStaticPaths() {
-  return firstPartyPosts().map((item) => ({ params: { slug: item.slug! }, props: { item } }));
+export async function getStaticPaths() {
+  const items = await getBlogFeedItems();
+  return items.map((item) => ({ params: { slug: item.slug! }, props: { item } }));
 }
 
 interface Props {
   item: FeedItem;
 }
 const { item } = Astro.props;
-const artist = getArtist(item.author);
-const more = FEED.filter((f) => f.id !== item.id)
-  .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
-  .slice(0, 3);
+
+const entry = (await getBlogEntry(item.slug!))!;
+const { Content } = await render(entry);
+const artist = item.author ? await getArtist(item.author) : undefined;
+
+// Related: shares a tag or the author; pad with latest so there are always up to 3.
+const others = (await getBlogFeedItems()).filter((f) => f.id !== item.id);
+const kin = others.filter(
+  (f) => (item.author && f.author === item.author) || f.tags?.some((t) => item.tags?.includes(t)),
+);
+const related = [...new Set([...kin, ...others])].slice(0, 3);
+
+// ponytail: local copy of the YouTube-id parse (content.ts keeps its own private)
+function youtubeId(raw: string): string | undefined {
+  try {
+    const u = new URL(raw);
+    if (u.hostname.replace(/^www\./, "") === "youtu.be") return u.pathname.slice(1).split("/")[0] || undefined;
+    return u.searchParams.get("v") ?? u.pathname.match(/\/(?:embed|shorts|live)\/([\w-]+)/)?.[1] ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+const ytId = entry.data.youtube ? youtubeId(entry.data.youtube) : undefined;
+
+const dateLabel = new Date(item.publishedAt).toLocaleDateString("en-IE", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
 ---
 
 <Layout title={`${item.title} — Blue Horizon Interactive`} description={item.excerpt}>
-  <article class="mx-auto max-w-3xl px-6 pt-32 pb-24">
-    <a href="/feed" class="text-sm text-slate-500 transition-colors hover:text-bh-cyan">← All updates</a>
+  <article class="mx-auto max-w-3xl px-6 pb-24 pt-32">
+    <a href="/feed" class="text-sm text-slate-500 transition-colors hover:text-bh-cyan">← The Feed</a>
 
-    <div class="mt-8 flex flex-wrap items-center gap-2.5">
+    <div class="mt-10 flex flex-wrap items-center gap-2.5">
       <PlatformBadge platform={item.platform} />
-      <span class="text-xs text-slate-500">{relTime(item.publishedAt)}</span>
-      {item.tags?.map((t) => (
-        <span class="rounded-full border border-white/10 px-2.5 py-0.5 text-xs text-slate-400">{t}</span>
-      ))}
+      <span class="text-xs text-slate-500">{dateLabel}</span>
+      <span class="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-slate-500">
+        <span aria-hidden class="h-1 w-1 rounded-full bg-slate-500"></span> posted by BHI
+      </span>
     </div>
 
-    <h1 class="mt-5 text-4xl font-semibold text-slate-100">{item.title}</h1>
+    <h1 class="mt-6 text-4xl font-semibold tracking-tight text-slate-100 sm:text-5xl">{item.title}</h1>
 
-    {item.media && <MediaTile tint={item.media.tint} label={item.media.label} aspect="wide" className="mt-8" />}
-
-    <div class="mt-8 space-y-5 leading-relaxed text-slate-300">
-      {item.body?.map((p) => <p>{p}</p>)}
-    </div>
-
-    {artist && (
-      <a
-        href={`/artists/${artist.slug}`}
-        class="mt-12 inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-5 py-4 transition-colors hover:border-bh-blue/40"
-      >
-        <span
-          class={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${artist.avatarTint} text-xs font-semibold text-white`}
+    {
+      artist && (
+        <a
+          href={`/artists/${artist.slug}`}
+          class="mt-8 inline-flex items-center gap-3 text-sm text-slate-400 transition-colors hover:text-bh-cyan"
         >
-          {artist.initials}
-        </span>
-        <span>
-          <span class="block text-sm font-medium text-slate-200">{artist.name}</span>
-          <span class="block text-xs text-slate-500">{artist.role}</span>
-        </span>
-      </a>
-    )}
+          <span
+            class={`flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br ${artist.avatarTint} text-[11px] font-semibold text-white`}
+          >
+            {artist.initials}
+          </span>
+          <span>
+            <span class="block font-medium text-slate-200">{artist.name}</span>
+            <span class="block text-xs text-slate-500">{artist.role}</span>
+          </span>
+        </a>
+      )
+    }
+
+    {
+      item.media?.thumbUrl ? (
+        <img
+          src={item.media.thumbUrl}
+          alt={item.title}
+          class="mt-10 w-full rounded-2xl border border-white/10"
+        />
+      ) : (
+        item.media && <MediaTile tint={item.media.tint} aspect="wide" className="mt-10" />
+      )
+    }
+
+    <div class="bh-prose mt-12">
+      <Content />
+    </div>
+
+    {
+      ytId && (
+        <div
+          class="relative mt-12 aspect-video overflow-hidden rounded-2xl border border-white/10 bg-bh-ink"
+          data-embed={`https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0`}
+        >
+          <div class="absolute inset-0 bg-gradient-to-br from-[#0a2a6b] to-[#1a9fff]" />
+          <img
+            src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}
+            alt=""
+            loading="lazy"
+            class="absolute inset-0 h-full w-full object-cover"
+            onerror="this.style.display='none'"
+          />
+          <button
+            type="button"
+            aria-label={`Play video — ${item.title}`}
+            class="group absolute inset-0 flex items-center justify-center"
+          >
+            <span class="flex h-14 w-14 items-center justify-center rounded-full border border-white/30 bg-black/40 backdrop-blur-sm transition-transform duration-300 group-hover:scale-110">
+              <svg viewBox="0 0 24 24" class="ml-0.5 h-5 w-5 fill-white" aria-hidden="true">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </span>
+          </button>
+        </div>
+      )
+    }
+
+    {
+      item.tags && item.tags.length > 0 && (
+        <div class="mt-12 flex flex-wrap gap-2 border-t border-white/5 pt-8">
+          {item.tags.map((t) => (
+            <span class="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-400">{t}</span>
+          ))}
+        </div>
+      )
+    }
   </article>
 
-  <section class="border-t border-white/5 px-6 py-24">
-    <div class="mx-auto max-w-6xl">
-      <SectionHead eyebrow="Keep scrolling" title="More from the feed" align="left" />
-      <div class="mt-10 grid gap-5 sm:grid-cols-3">
-        {more.map((f) => <FeedCard item={f} />)}
-      </div>
-      <div class="mt-16">
+  <section class="border-t border-white/5 px-6 py-20">
+    <div class="mx-auto max-w-3xl">
+      {
+        related.length > 0 && (
+          <>
+            <SectionHead eyebrow="Keep reading" title="More from the feed" align="left" />
+            <div class="mt-10 space-y-5">
+              {related.map((f) => (
+                <GlassCard href={`/feed/${f.slug}`} className="p-5 sm:p-6">
+                  <div class="flex flex-wrap items-center gap-2.5">
+                    <PlatformBadge platform={f.platform} />
+                    <span class="text-xs text-slate-500">{relTime(f.publishedAt)}</span>
+                  </div>
+                  <h3 class="mt-3 text-lg font-semibold text-slate-100">{f.title}</h3>
+                  {f.excerpt && <p class="mt-1.5 line-clamp-2 text-sm leading-relaxed text-slate-400">{f.excerpt}</p>}
+                  <span class="mt-3 inline-flex items-center gap-1 text-xs font-medium text-bh-cyan">
+                    Read <ArrowRight className="h-3 w-3" aria-hidden />
+                  </span>
+                </GlassCard>
+              ))}
+            </div>
+          </>
+        )
+      }
+      <div class={related.length > 0 ? "mt-16" : ""}>
         <Connect />
       </div>
     </div>
   </section>
 </Layout>
+
+<!-- Lazy click-to-load embed: no iframe exists until the reader asks for it. -->
+<script>
+  document.querySelectorAll<HTMLElement>("[data-embed]").forEach((frame) => {
+    frame.querySelector("button")?.addEventListener(
+      "click",
+      () => {
+        const iframe = document.createElement("iframe");
+        iframe.src = frame.dataset.embed!;
+        iframe.title = "YouTube video";
+        iframe.allow =
+          "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+        iframe.allowFullscreen = true;
+        iframe.referrerPolicy = "strict-origin-when-cross-origin";
+        iframe.className = "absolute inset-0 h-full w-full";
+        frame.replaceChildren(iframe);
+      },
+      { once: true },
+    );
+  });
+</script>
+
+<!-- Editorial prose for rendered markdown — bh tokens, thin light lines. -->
+<style is:global>
+  .bh-prose {
+    font-size: 1.0625rem;
+    line-height: 1.8;
+    color: rgb(203 213 225);
+  }
+  .bh-prose p {
+    margin: 1.25em 0;
+  }
+  .bh-prose h2,
+  .bh-prose h3,
+  .bh-prose h4 {
+    font-family: var(--font-display);
+    color: #f1f5f9;
+    letter-spacing: -0.01em;
+  }
+  .bh-prose h2 {
+    font-size: 1.6rem;
+    margin: 2.2em 0 0.7em;
+  }
+  .bh-prose h3 {
+    font-size: 1.25rem;
+    margin: 1.8em 0 0.6em;
+  }
+  .bh-prose a {
+    color: var(--color-bh-cyan);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(88, 214, 255, 0.4);
+    transition: text-decoration-color 0.2s;
+  }
+  .bh-prose a:hover {
+    text-decoration-color: currentColor;
+  }
+  .bh-prose strong {
+    color: #e2e8f0;
+  }
+  .bh-prose code {
+    font-size: 0.9em;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 0.15em 0.4em;
+  }
+  .bh-prose pre {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+    overflow-x: auto;
+    margin: 1.6em 0;
+    font-size: 0.9rem;
+  }
+  .bh-prose pre code {
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .bh-prose ul,
+  .bh-prose ol {
+    padding-left: 1.4em;
+    margin: 1.25em 0;
+  }
+  .bh-prose li {
+    margin: 0.4em 0;
+  }
+  .bh-prose li::marker {
+    color: rgba(88, 214, 255, 0.6);
+  }
+  .bh-prose blockquote {
+    border-left: 2px solid rgba(88, 214, 255, 0.4);
+    margin: 1.6em 0;
+    padding: 0.2em 0 0.2em 1.2em;
+    color: rgb(148 163 184);
+    font-style: italic;
+  }
+  .bh-prose img {
+    display: block;
+    width: 100%;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 2em 0;
+  }
+  .bh-prose hr {
+    border: 0;
+    height: 1px;
+    width: 11rem;
+    margin: 3em auto;
+    background: linear-gradient(90deg, transparent, rgba(88, 214, 255, 0.25), transparent);
+  }
+</style>

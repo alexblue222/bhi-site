@@ -1,0 +1,132 @@
+# Sveltia CMS config — mirrors src/content.config.ts exactly. Edit both together.
+backend:
+  name: github
+  repo: alexblue222/bhi-site
+  branch: main
+  base_url: https://hub.bluehorizoninteractive.com
+  auth_endpoint: auth
+  api_root: https://hub.bluehorizoninteractive.com/github
+
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
+collections:
+  - name: blog
+    label: Blog
+    label_singular: Post
+    folder: src/content/blog
+    format: frontmatter
+    extension: md
+    create: true
+    slug: "{{slug}}" # from title
+    fields:
+      - { name: title, label: Title, widget: string }
+      - name: description
+        label: Description
+        widget: text
+        hint: Card excerpt shown in the feed.
+      - name: author
+        label: Author
+        widget: string
+        default: alex-sheridan
+        hint: Artist slug (e.g. alex-sheridan, fionn, pablo, bon).
+      - { name: publishedAt, label: Published at, widget: datetime }
+      - name: tags
+        label: Tags
+        widget: list
+        field: { name: tag, label: Tag, widget: string }
+        default: []
+      - name: heroTint
+        label: Hero tint
+        widget: string
+        required: false
+        hint: "Tailwind gradient classes, e.g. from-[#0a2a6b] to-[#1a9fff]"
+      - { name: heroImage, label: Hero image, widget: image, required: false }
+      - name: youtube
+        label: YouTube
+        widget: string
+        required: false
+        hint: YouTube video URL to embed.
+      - { name: draft, label: Draft, widget: boolean, default: false }
+      - { name: body, label: Body, widget: markdown }
+
+  - name: artists
+    label: Artists
+    label_singular: Artist
+    folder: src/content/artists
+    format: frontmatter
+    extension: md
+    create: true
+    identifier_field: name
+    slug: "{{slug}}" # from name
+    fields:
+      - { name: name, label: Name, widget: string }
+      - { name: role, label: Role, widget: string }
+      - { name: initials, label: Initials, widget: string }
+      - name: avatarTint
+        label: Avatar tint
+        widget: string
+        hint: "Tailwind gradient classes, e.g. from-[#241056] to-[#5b30c0]"
+      - { name: avatarImage, label: Avatar image, widget: image, required: false }
+      - { name: bio, label: Bio, widget: text, hint: Short one-liner shown on cards. }
+      - name: socials
+        label: Socials
+        widget: list
+        default: []
+        fields:
+          - name: platform
+            label: Platform
+            widget: select
+            options:
+              [
+                youtube,
+                patreon,
+                instagram,
+                tiktok,
+                gumroad,
+                superhive,
+                fab,
+                kickstarter,
+                discord,
+                web,
+              ]
+          - { name: href, label: Link, widget: string }
+      - name: portfolio
+        label: Portfolio
+        widget: list
+        default: []
+        fields:
+          - { name: label, label: Label, widget: string }
+          - name: tint
+            label: Tint
+            widget: string
+            hint: "Tailwind gradient classes, e.g. from-[#101c4a] to-[#2e9bff]"
+          - { name: image, label: Image, widget: image, required: false }
+          - name: medium
+            label: Medium
+            widget: select
+            options: [Game art, Cinematics, Plugins, Illustration]
+          - name: span
+            label: Span
+            widget: string
+            required: false
+            hint: "Optional grid span class, e.g. sm:col-span-2"
+      - { name: featured, label: Featured, widget: boolean, default: false }
+      - { name: order, label: Order, widget: number, value_type: int, default: 99 }
+      - { name: body, label: Long bio, widget: markdown }
+
+  - name: pins
+    label: Pins
+    label_singular: Pin
+    folder: src/content/pins
+    format: yml
+    extension: yml
+    create: true
+    fields:
+      - name: url
+        label: URL
+        widget: string
+        hint: Paste a YouTube / Instagram / Patreon link.
+      - { name: title, label: Title, widget: string }
+      - { name: note, label: Note, widget: string, required: false }
+      - { name: order, label: Order, widget: number, value_type: int, default: 0 }

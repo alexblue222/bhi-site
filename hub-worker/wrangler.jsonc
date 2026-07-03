@@ -1,0 +1,15 @@
+{
+  "name": "bhi-hub",
+  "main": "src/index.js",
+  "compatibility_date": "2026-07-03",
+  "workers_dev": false, // no workers.dev subdomain registered on this account — custom domain only
+  "routes": [
+    { "pattern": "hub.bluehorizoninteractive.com", "custom_domain": true }
+  ]
+  // Plain vars (secrets go via `wrangler secret put`). Uncomment + fill to activate:
+  // "vars": {
+  //   "YOUTUBE_CHANNEL_ID": "UC...",
+  //   "ACCESS_TEAM_DOMAIN": "<team>.cloudflareaccess.com",
+  //   "ACCESS_AUD": "<access-app-aud-tag>"
+  // }
+}

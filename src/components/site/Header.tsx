@@ -3,11 +3,12 @@ import { Menu, X } from "lucide-react";
 import { LogoMark } from "./LogoMark";
 import { Connect } from "../ui/Connect";
 
-// Hub IA: the feed is the centerpiece, commerce and people are first-class.
+// Launch IA (BUILD-SPEC): Home · Feed · Games · Artists · Studio. Marketplace is built but
+// out of nav until launch — routes stay live.
 const NAV = [
+  { label: "Home", href: "/" },
   { label: "Feed", href: "/feed" },
   { label: "Games", href: "/games" },
-  { label: "Marketplace", href: "/marketplace" },
   { label: "Artists", href: "/artists" },
   { label: "Studio", href: "/studio" },
 ];

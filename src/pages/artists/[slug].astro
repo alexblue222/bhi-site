@@ -2,42 +2,39 @@
 import Layout from "../../layouts/Layout.astro";
 import { SectionHead } from "../../components/ui/SectionHead";
 import { Connect } from "../../components/ui/Connect";
-import { PlatformIcon } from "../../components/ui/PlatformBadge";
+import { PlatformIcon, PlatformBadge } from "../../components/ui/PlatformBadge";
 import { ProductCard } from "../../components/cards/ProductCard";
-import { FeedCard } from "../../components/cards/FeedCard";
+import { Avatar } from "../../components/cards/ArtistCard";
 import { PortfolioGallery } from "../../components/artists/PortfolioGallery";
-import { ARTISTS, productsBy, feedBy, type Artist } from "../../lib/data";
+import { getArtists, getStaticFeed } from "../../lib/content";
+import { productsBy, relTime } from "../../lib/data";
 
-export function getStaticPaths() {
-  return ARTISTS.map((artist) => ({ params: { slug: artist.slug }, props: { artist } }));
+export async function getStaticPaths() {
+  const artists = await getArtists();
+  return artists.map((artist) => ({ params: { slug: artist.slug }, props: { artist } }));
 }
 
-interface Props {
-  artist: Artist;
-}
+type Props = { artist: Awaited<ReturnType<typeof getArtists>>[number] };
 const { artist } = Astro.props;
 
 const products = productsBy(artist.slug);
-const feedItems = feedBy(artist.slug).slice(0, 3);
+const feedItems = (await getStaticFeed()).filter((i) => i.author === artist.slug).slice(0, 4);
+// Some CMS entries only have the one-liner in the body too — don't repeat it under the hero.
+const longBio = (artist.longBio ?? []).filter((p) => p !== artist.bio);
 ---
 
 <Layout title={`${artist.name} — Blue Horizon Interactive`} description={artist.bio}>
   <!-- profile hero -->
-  <section class="px-6 pt-32 pb-24">
-    <div class="mx-auto max-w-6xl">
+  <section class="px-6 pt-32 pb-20">
+    <div class="mx-auto max-w-6xl" data-reveal-group>
       <a href="/artists" class="text-sm text-slate-500 transition-colors hover:text-bh-amber">← All artists</a>
 
       <div class="mt-8 flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-8">
-        <span
-          class={`flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${artist.avatarTint} font-display text-3xl font-semibold text-white`}
-        >
-          {artist.initials}
-        </span>
+        <Avatar artist={artist} size="h-24 w-24 text-3xl" />
         <div class="min-w-0">
           <p class="text-xs font-semibold uppercase tracking-[0.28em] text-bh-amber">{artist.role}</p>
-          <h1 class="mt-2 text-4xl font-semibold text-slate-100 sm:text-5xl">{artist.name}</h1>
+          <h1 class="mt-2 font-display text-4xl font-semibold text-slate-100 sm:text-5xl">{artist.name}</h1>
           <p class="mt-4 max-w-2xl leading-relaxed text-slate-400">{artist.bio}</p>
-          {artist.longBio?.map((para) => <p class="mt-3 max-w-2xl leading-relaxed text-slate-400">{para}</p>)}
 
           <div class="mt-7 flex flex-wrap items-center gap-2.5">
             {artist.socials.map((s) => (
@@ -60,44 +57,93 @@ const feedItems = feedBy(artist.slug).slice(0, 3);
           </div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- portfolio -->
-  <section class="border-t border-white/5 px-6 py-24">
-    <div class="mx-auto max-w-6xl">
-      <SectionHead eyebrow="Portfolio" title="Selected work" align="left" accent="amber" />
-      <div class="mt-10">
-        <PortfolioGallery pieces={artist.portfolio} client:load />
-      </div>
-    </div>
-  </section>
+      <!-- amber horizon-line under the hero -->
+      <div class="mt-14 h-px w-full bg-gradient-to-r from-transparent via-bh-amber/50 to-transparent" aria-hidden></div>
 
-  <!-- marketplace assets — omitted entirely when the artist has none -->
-  {
-    products.length > 0 && (
-      <section class="border-t border-white/5 px-6 py-24">
-        <div class="mx-auto max-w-6xl">
-          <SectionHead eyebrow="Marketplace" title={`Assets by ${artist.name}`} align="left" accent="amber" />
-          <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {products.map((product) => (
-              <ProductCard product={product} />
+      {
+        longBio.length > 0 && (
+          <div class="mt-10 max-w-2xl">
+            {longBio.map((para) => (
+              <p class="mt-4 first:mt-0 leading-relaxed text-slate-400">{para}</p>
             ))}
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  <!-- portfolio — omitted entirely when the artist has no pieces yet -->
+  {
+    artist.portfolio.length > 0 && (
+      <section class="border-t border-white/5 px-6 py-24">
+        <div class="mx-auto max-w-6xl" data-reveal-group>
+          <SectionHead eyebrow="Portfolio" title="Selected work" align="left" accent="amber" />
+          <div class="mt-10">
+            <PortfolioGallery pieces={artist.portfolio} client:load />
           </div>
         </div>
       </section>
     )
   }
 
-  <!-- latest feed appearances — omitted entirely when the artist has none -->
+  <!-- from the feed — compact rows, everything routes on-site into /feed -->
   {
     feedItems.length > 0 && (
       <section class="border-t border-white/5 px-6 py-24">
         <div class="mx-auto max-w-6xl">
-          <SectionHead eyebrow="Latest" title="In the feed" align="left" accent="amber" />
-          <div class="mt-10 grid gap-6 sm:grid-cols-3">
+          <div data-reveal-group>
+            <SectionHead eyebrow="Latest" title="From the feed" align="left" accent="amber" />
+          </div>
+          <div class="mt-10 space-y-3" data-reveal-group>
             {feedItems.map((item) => (
-              <FeedCard item={item} />
+              <a
+                href={item.slug ? `/feed/${item.slug}` : "/feed"}
+                class="group flex items-center gap-4 rounded-xl border border-white/10 bg-white/[0.02] p-3 pr-5 transition-all duration-300 hover:border-bh-amber/40 hover:shadow-[0_0_24px_-12px_rgba(255,179,71,0.35)]"
+              >
+                <span
+                  class={`relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br ${item.media?.tint ?? "from-[#0a2a6b] to-[#1a9fff]"}`}
+                >
+                  {item.media?.thumbUrl && (
+                    <img
+                      src={item.media.thumbUrl}
+                      alt=""
+                      loading="lazy"
+                      class="absolute inset-0 h-full w-full object-cover"
+                      onerror="this.remove()"
+                    />
+                  )}
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block truncate text-sm font-medium text-slate-100">{item.title}</span>
+                  <span class="mt-1 flex items-center gap-2.5">
+                    <PlatformBadge platform={item.platform} />
+                    <span class="text-xs text-slate-500">{relTime(item.publishedAt)}</span>
+                  </span>
+                </span>
+                <span class="shrink-0 text-sm text-bh-amber/70 transition-transform duration-300 group-hover:translate-x-0.5">→</span>
+              </a>
+            ))}
+          </div>
+          <div class="mt-6">
+            <a href="/feed" class="text-sm font-medium text-slate-400 transition-colors hover:text-bh-amber">
+              Everything in the feed →
+            </a>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- marketplace assets — omitted entirely when the artist has none -->
+  {
+    products.length > 0 && (
+      <section class="border-t border-white/5 px-6 py-24">
+        <div class="mx-auto max-w-6xl" data-reveal-group>
+          <SectionHead eyebrow="Marketplace" title={`Assets by ${artist.name}`} align="left" accent="amber" />
+          <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {products.map((product) => (
+              <ProductCard product={product} />
             ))}
           </div>
         </div>
@@ -111,3 +157,8 @@ const feedItems = feedBy(artist.slug).slice(0, 3);
     </div>
   </section>
 </Layout>
+
+<script>
+  import { revealUp } from "../../lib/gsapSetup";
+  document.querySelectorAll("[data-reveal-group]").forEach((g) => revealUp(g.children));
+</script>

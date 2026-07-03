@@ -20,7 +20,7 @@ export interface FeedItem {
   body?: string[];
   /** First-party posts only — detail route. */
   slug?: string;
-  media?: { tint: string; label?: string; aspect?: "video" | "square" | "wide"; duration?: string };
+  media?: { tint: string; label?: string; aspect?: "video" | "square" | "wide"; duration?: string; thumbUrl?: string; embedUrl?: string };
   sourceUrl?: string;
   /** Artist slug. */
   author?: string;
