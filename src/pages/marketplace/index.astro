@@ -1,0 +1,24 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageIntro from "../../components/site/PageIntro.astro";
+import { MarketGrid } from "../../components/market/MarketGrid";
+import { CartDrawer } from "../../components/market/CartDrawer";
+---
+
+<Layout
+  title="Marketplace — Blue Horizon Interactive"
+  description="Plugins, assets and shaders made in production at Blue Horizon — sold directly from the workshop."
+>
+  <PageIntro
+    eyebrow="Marketplace"
+    title="Tools from the workshop"
+    sub="Plugins, assets and shaders made in production on our own projects — sold directly, and updated for as long as we use them ourselves."
+    wip={false}
+  />
+  <section class="border-t border-white/5 px-6 py-24">
+    <div class="mx-auto max-w-6xl">
+      <MarketGrid client:load />
+    </div>
+  </section>
+  <CartDrawer client:load />
+</Layout>

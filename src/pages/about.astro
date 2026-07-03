@@ -1,0 +1,61 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageIntro from "../components/site/PageIntro.astro";
+import { GlassCard } from "../components/ui/GlassCard";
+import { Connect } from "../components/ui/Connect";
+import { Gamepad2, Clapperboard } from "lucide-react";
+---
+
+<Layout
+  title="About — Blue Horizon Interactive"
+  description="An Irish studio at the meeting point of games, technology and media."
+>
+  <PageIntro
+    eyebrow="About"
+    title="Building the light"
+    sub="An Irish studio at the meeting point of games, technology and media."
+    wip={false}
+  />
+
+  <!-- The two arms -->
+  <section class="border-t border-white/5 px-6 py-24">
+    <div class="mx-auto grid max-w-6xl gap-6 md:grid-cols-2">
+      <GlassCard className="p-8">
+        <Gamepad2 className="h-7 w-7 text-bh-cyan" />
+        <p class="mt-5 text-[11px] font-semibold tracking-[0.28em] text-bh-cyan/80">INTERACTIVE</p>
+        <h3 class="mt-1 text-xl font-semibold text-slate-100">Interactive</h3>
+        <p class="mt-3 leading-relaxed text-slate-400">
+          Original games and real-time experiences — designed to feel like a glimpse of what's next,
+          not a rerun of what's been.
+        </p>
+      </GlassCard>
+      <GlassCard className="p-8">
+        <Clapperboard className="h-7 w-7 text-bh-cyan" />
+        <p class="mt-5 text-[11px] font-semibold tracking-[0.28em] text-bh-cyan/80">STUDIO</p>
+        <h3 class="mt-1 text-xl font-semibold text-slate-100">Studio</h3>
+        <p class="mt-3 leading-relaxed text-slate-400">
+          The craft arm: cinematics, tools and pipelines. The engineering and artistry that lets the
+          interactive work punch above its weight.
+        </p>
+      </GlassCard>
+    </div>
+  </section>
+
+  <!-- Mission -->
+  <section class="border-t border-white/5 px-6 py-24">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="leading-relaxed text-slate-400">
+        Blue Horizon Interactive builds original games in Unreal Engine, and the cinematics, tools
+        and pipelines that make them possible. Everything we learn ships twice — once in the work,
+        and again as the devlogs, plugins and assets in this hub.
+      </p>
+      <p class="mt-6 leading-relaxed text-slate-400">We do not fear the dark. We build the light.</p>
+    </div>
+  </section>
+
+  <section class="border-t border-white/5 px-6 py-24">
+    <div class="mx-auto max-w-6xl">
+      <Connect />
+    </div>
+  </section>
+</Layout>

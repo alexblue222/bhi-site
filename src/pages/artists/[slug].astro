@@ -1,0 +1,113 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { SectionHead } from "../../components/ui/SectionHead";
+import { Connect } from "../../components/ui/Connect";
+import { PlatformIcon } from "../../components/ui/PlatformBadge";
+import { ProductCard } from "../../components/cards/ProductCard";
+import { FeedCard } from "../../components/cards/FeedCard";
+import { PortfolioGallery } from "../../components/artists/PortfolioGallery";
+import { ARTISTS, productsBy, feedBy, type Artist } from "../../lib/data";
+
+export function getStaticPaths() {
+  return ARTISTS.map((artist) => ({ params: { slug: artist.slug }, props: { artist } }));
+}
+
+interface Props {
+  artist: Artist;
+}
+const { artist } = Astro.props;
+
+const products = productsBy(artist.slug);
+const feedItems = feedBy(artist.slug).slice(0, 3);
+---
+
+<Layout title={`${artist.name} — Blue Horizon Interactive`} description={artist.bio}>
+  <!-- profile hero -->
+  <section class="px-6 pt-32 pb-24">
+    <div class="mx-auto max-w-6xl">
+      <a href="/artists" class="text-sm text-slate-500 transition-colors hover:text-bh-amber">← All artists</a>
+
+      <div class="mt-8 flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-8">
+        <span
+          class={`flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${artist.avatarTint} font-display text-3xl font-semibold text-white`}
+        >
+          {artist.initials}
+        </span>
+        <div class="min-w-0">
+          <p class="text-xs font-semibold uppercase tracking-[0.28em] text-bh-amber">{artist.role}</p>
+          <h1 class="mt-2 text-4xl font-semibold text-slate-100 sm:text-5xl">{artist.name}</h1>
+          <p class="mt-4 max-w-2xl leading-relaxed text-slate-400">{artist.bio}</p>
+          {artist.longBio?.map((para) => <p class="mt-3 max-w-2xl leading-relaxed text-slate-400">{para}</p>)}
+
+          <div class="mt-7 flex flex-wrap items-center gap-2.5">
+            {artist.socials.map((s) => (
+              <a
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={s.platform === "web" ? "Website" : s.platform}
+                class="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-slate-400 transition-all hover:-translate-y-0.5 hover:border-bh-amber/40 hover:text-bh-amber"
+              >
+                <PlatformIcon platform={s.platform} className="h-4 w-4" />
+              </a>
+            ))}
+            <a
+              href="/contact"
+              class="inline-flex h-10 items-center rounded-xl border border-bh-amber/40 bg-bh-amber/10 px-4 text-sm font-medium text-bh-amber transition-colors hover:bg-bh-amber/20"
+            >
+              Commission / contact
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- portfolio -->
+  <section class="border-t border-white/5 px-6 py-24">
+    <div class="mx-auto max-w-6xl">
+      <SectionHead eyebrow="Portfolio" title="Selected work" align="left" accent="amber" />
+      <div class="mt-10">
+        <PortfolioGallery pieces={artist.portfolio} client:load />
+      </div>
+    </div>
+  </section>
+
+  <!-- marketplace assets — omitted entirely when the artist has none -->
+  {
+    products.length > 0 && (
+      <section class="border-t border-white/5 px-6 py-24">
+        <div class="mx-auto max-w-6xl">
+          <SectionHead eyebrow="Marketplace" title={`Assets by ${artist.name}`} align="left" accent="amber" />
+          <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {products.map((product) => (
+              <ProductCard product={product} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- latest feed appearances — omitted entirely when the artist has none -->
+  {
+    feedItems.length > 0 && (
+      <section class="border-t border-white/5 px-6 py-24">
+        <div class="mx-auto max-w-6xl">
+          <SectionHead eyebrow="Latest" title="In the feed" align="left" accent="amber" />
+          <div class="mt-10 grid gap-6 sm:grid-cols-3">
+            {feedItems.map((item) => (
+              <FeedCard item={item} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="border-t border-white/5 px-6 py-24">
+    <div class="mx-auto max-w-3xl">
+      <Connect />
+    </div>
+  </section>
+</Layout>

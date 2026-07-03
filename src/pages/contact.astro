@@ -1,0 +1,21 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageIntro from "../components/site/PageIntro.astro";
+---
+<Layout title="Contact — Blue Horizon Interactive" description="Get in touch with Blue Horizon Interactive.">
+  <PageIntro
+    eyebrow="Contact"
+    title="Get in touch"
+    sub="Working on something, or want to work together? We'd love to hear from you."
+    wip={false}
+  />
+  <section class="px-6 pb-28">
+    <div class="mx-auto max-w-md text-center">
+      <a href="mailto:hello@bluehorizoninteractive.com"
+         class="inline-block rounded-full border border-[#2e9bff]/40 bg-[#2e9bff]/10 px-6 py-3 text-sm font-medium text-[#bfe0ff] transition-colors hover:bg-[#2e9bff]/20">
+        hello@bluehorizoninteractive.com
+      </a>
+      <p class="mt-6 text-sm text-slate-500">A proper contact form lands with the next phase.</p>
+    </div>
+  </section>
+</Layout>

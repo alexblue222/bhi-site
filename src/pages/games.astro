@@ -1,0 +1,22 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageIntro from "../components/site/PageIntro.astro";
+import { GameCards } from "../components/home/HubSections";
+---
+
+<Layout
+  title="Games — Blue Horizon Interactive"
+  description="Original games and real-time experiences from Blue Horizon Interactive."
+>
+  <PageIntro
+    eyebrow="Interactive"
+    title="Games of the future"
+    sub="Original games and real-time experiences — designed to feel like a glimpse of what's next, not a rerun of what's been."
+    wip={false}
+  />
+  <section class="border-t border-white/5 px-6 py-24">
+    <div class="mx-auto max-w-6xl">
+      <GameCards detail />
+    </div>
+  </section>
+</Layout>

@@ -1,0 +1,44 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { SectionHead } from "../../components/ui/SectionHead";
+import { GlassCard } from "../../components/ui/GlassCard";
+import { ArtistCard } from "../../components/cards/ArtistCard";
+import { ARTISTS } from "../../lib/data";
+---
+
+<Layout
+  title="Artists — Blue Horizon Interactive"
+  description="The curated roster of artists and builders behind Blue Horizon Interactive."
+>
+  <section class="px-6 pt-32 pb-24">
+    <div class="mx-auto max-w-6xl">
+      <SectionHead
+        eyebrow="The people"
+        title="The hands behind the horizon"
+        sub="A small crew of artists and builders — every glow on this site started in someone's hands."
+        accent="amber"
+      />
+
+      <div class="mt-14 grid gap-6 sm:grid-cols-2">
+        {ARTISTS.map((artist) => <ArtistCard artist={artist} />)}
+      </div>
+
+      <!-- working with us — quiet, curated-roster strip -->
+      <div class="mt-14">
+        <GlassCard glow="amber" href="/contact" className="p-6 sm:p-8">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.28em] text-bh-amber">Working with us</p>
+              <p class="mt-2 max-w-xl text-sm leading-relaxed text-slate-400">
+                The roster is curated; if your work belongs on this horizon, get in touch.
+              </p>
+            </div>
+            <span class="shrink-0 text-sm font-medium text-bh-amber/80 transition-transform duration-300 group-hover:translate-x-0.5">
+              Get in touch →
+            </span>
+          </div>
+        </GlassCard>
+      </div>
+    </div>
+  </section>
+</Layout>

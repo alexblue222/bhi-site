@@ -1,0 +1,22 @@
+---
+import Layout from "../layouts/Layout.astro";
+import HeroStage from "../components/hero/HeroStage.tsx";
+import {
+  LatestFromHub,
+  FeaturedGames,
+  MarketplacePreview,
+  ArtistsPreview,
+  HomeOutro,
+} from "../components/home/HubSections";
+---
+
+<Layout hero>
+  <HeroStage client:only="react" />
+  <main class="relative z-10 bg-[#01030a]">
+    <LatestFromHub />
+    <FeaturedGames />
+    <MarketplacePreview />
+    <ArtistsPreview />
+    <HomeOutro />
+  </main>
+</Layout>

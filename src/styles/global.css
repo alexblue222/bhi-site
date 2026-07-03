@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+/* Blue Horizon brand tokens (PROJECT.md §3) — exposed as Tailwind utilities:
+   text-bh-cyan, bg-bh-ink, border-bh-mid, font-display, font-body, font-brand … */
+@theme {
+  --color-bh-bg: #0b0f16;
+  --color-bh-ink: #01030a;
+  --color-bh-navy: #12263a;
+  --color-bh-mid: #1e4d75;
+  --color-bh-cyan: #58d6ff;
+  --color-bh-blue: #2e9bff;
+  --color-bh-amber: #ffb347;
+  --color-bh-charcoal: #2a2f36;
+  --color-bh-text: #e6edf3;
+
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-brand: "Michroma", ui-sans-serif, sans-serif;
+}
+
+:root { color-scheme: dark; }
+
+html {
+  scroll-behavior: smooth;
+  background: #01030a;
+}
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--color-bh-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Headings default to the display face; the brand face stays reserved for the logo. */
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+}

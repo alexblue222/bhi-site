@@ -1,0 +1,142 @@
+---
+import { Check } from "lucide-react";
+import Layout from "../../layouts/Layout.astro";
+import { GlassCard } from "../../components/ui/GlassCard";
+import { MediaTile } from "../../components/ui/MediaTile";
+import { SectionHead } from "../../components/ui/SectionHead";
+import { ProductCard } from "../../components/cards/ProductCard";
+import { BuyBox } from "../../components/market/BuyBox";
+import { CartDrawer } from "../../components/market/CartDrawer";
+import { PRODUCTS, formatPrice, getArtist, type Product } from "../../lib/data";
+
+export function getStaticPaths() {
+  return PRODUCTS.map((product) => ({ params: { slug: product.slug }, props: { product } }));
+}
+
+interface Props {
+  product: Product;
+}
+const { product } = Astro.props;
+
+const maker = getArtist(product.maker);
+const more = PRODUCTS.filter((p) => p.slug !== product.slug).slice(0, 3);
+const mainTile = product.gallery[0] ?? { tint: product.thumbTint, label: product.title };
+---
+
+<Layout title={`${product.title} — Marketplace — Blue Horizon Interactive`} description={product.tagline}>
+  <!-- Gallery + purchase -->
+  <section class="px-6 pb-24 pt-32">
+    <div class="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.2fr_1fr]">
+      <div>
+        <MediaTile tint={mainTile.tint} label={mainTile.label} aspect="video" />
+        {product.gallery.length > 1 && (
+          <div class="mt-3 grid grid-cols-3 gap-3">
+            {product.gallery.map((g) => (
+              <MediaTile tint={g.tint} label={g.label} aspect="video" />
+            ))}
+          </div>
+        )}
+      </div>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.28em] text-bh-cyan">{product.category}</p>
+        <h1 class="mt-3 font-display text-3xl font-semibold text-slate-100 sm:text-4xl">{product.title}</h1>
+        <p class="mt-3 leading-relaxed text-slate-400">{product.tagline}</p>
+        <div class="mt-6">
+          <BuyBox product={product} client:load />
+        </div>
+        <div class="mt-5 flex flex-wrap gap-2">
+          <span class="rounded-full border border-white/10 bg-white/[0.02] px-3.5 py-1.5 text-xs font-medium text-slate-400">
+            {product.compatibility}
+          </span>
+          <span class="rounded-full border border-white/10 bg-white/[0.02] px-3.5 py-1.5 text-xs font-medium text-slate-400">
+            v{product.version}
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Details -->
+  <section class="border-t border-white/5 px-6 py-24">
+    <div class="mx-auto max-w-6xl space-y-16">
+      <div class="max-w-3xl space-y-4">
+        {product.description.map((p) => <p class="leading-relaxed text-slate-400">{p}</p>)}
+      </div>
+
+      <div>
+        <h2 class="text-xs font-semibold uppercase tracking-[0.28em] text-bh-cyan">Features</h2>
+        <ul class="mt-6 grid gap-x-8 gap-y-3 sm:grid-cols-2">
+          {product.features.map((f) => (
+            <li class="flex items-start gap-3 text-sm leading-relaxed text-slate-300">
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-bh-cyan" aria-hidden />
+              {f}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="text-xs font-semibold uppercase tracking-[0.28em] text-bh-cyan">What's included</h2>
+        <div class="mt-6 grid gap-4 sm:grid-cols-2">
+          {product.licenseTiers.map((t) => (
+            <GlassCard glow="none" className="p-5">
+              <div class="flex items-baseline justify-between gap-3">
+                <p class="text-sm font-medium text-slate-100">{t.name}</p>
+                <p class="font-semibold text-slate-100">{formatPrice(t.price)}</p>
+              </div>
+              {t.note && <p class="mt-1.5 text-xs text-slate-500">{t.note}</p>}
+            </GlassCard>
+          ))}
+        </div>
+      </div>
+
+      {product.changelog.length > 0 && (
+        <div>
+          <h2 class="text-xs font-semibold uppercase tracking-[0.28em] text-bh-cyan">Changelog</h2>
+          <ul class="mt-6 space-y-3 border-l border-white/10 pl-5">
+            {product.changelog.map((c) => (
+              <li class="text-sm leading-relaxed">
+                <span class="font-medium text-slate-300">v{c.version}</span>
+                <span class="mx-2 text-slate-600">·</span>
+                <span class="text-slate-500">{c.date}</span>
+                <span class="mx-2 text-slate-600">·</span>
+                <span class="text-slate-400">{c.notes}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {maker && (
+        <div>
+          <h2 class="text-xs font-semibold uppercase tracking-[0.28em] text-bh-amber">Maker</h2>
+          <div class="mt-6 max-w-md">
+            <GlassCard href={`/artists/${maker.slug}`} glow="amber" className="flex items-center gap-4 p-5">
+              <span
+                class={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${maker.avatarTint} text-sm font-semibold text-white`}
+              >
+                {maker.initials}
+              </span>
+              <span class="min-w-0">
+                <span class="block font-medium text-slate-100">{maker.name}</span>
+                <span class="mt-0.5 block text-xs text-slate-500">{maker.role}</span>
+              </span>
+            </GlassCard>
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <!-- More from the marketplace -->
+  <section class="border-t border-white/5 px-6 py-24">
+    <div class="mx-auto max-w-6xl">
+      <SectionHead align="left" eyebrow="Marketplace" title="More from the workshop" />
+      <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {more.map((p) => <ProductCard product={p} />)}
+      </div>
+    </div>
+  </section>
+
+  <CartDrawer client:load />
+</Layout>

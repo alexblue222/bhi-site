@@ -1,0 +1,23 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageIntro from "../../components/site/PageIntro.astro";
+import { FeedStream } from "../../components/feed/FeedStream";
+---
+
+<Layout
+  title="The Feed — Blue Horizon Interactive"
+  description="Every video, devlog, release and post from Blue Horizon Interactive — YouTube, Patreon, Instagram, TikTok, the marketplaces and the studio — in one stream."
+>
+  <PageIntro
+    eyebrow="The signal"
+    title="Everything, in one feed"
+    sub="Every video, devlog, release and post — from YouTube, Patreon, Instagram, TikTok, the marketplaces and the studio itself — lands here, in one stream."
+    wip={false}
+  />
+
+  <section class="px-6 pb-24">
+    <div class="mx-auto max-w-6xl">
+      <FeedStream client:load />
+    </div>
+  </section>
+</Layout>
