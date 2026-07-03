@@ -222,9 +222,17 @@ async function handleGithub(request, url, env, ctx, origin) {
     return json({ error: "forbidden" }, 403, cors(origin));
   }
 
+  // The repo root itself (GET-only — metadata read, e.g. Sveltia's initial repo
+  // check). Deleting/patching the bare path would delete/rename the whole repo.
+  const isRepoRoot = ghPath === REPO_PREFIX && request.method === "GET";
+  // Sub-paths (contents/git/branches/etc.) — the methods Sveltia's GitHub backend
+  // actually issues: read + write + delete-a-file. No repo-root-level verbs reach here.
+  const REPO_SUBPATH_METHODS = new Set(["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE"]);
+  const isRepoSubpath = ghPath.startsWith(REPO_PREFIX + "/") && REPO_SUBPATH_METHODS.has(request.method);
+
   const allowed =
-    ghPath === REPO_PREFIX ||
-    ghPath.startsWith(REPO_PREFIX + "/") ||
+    isRepoRoot ||
+    isRepoSubpath ||
     (ghPath === "/user" && request.method === "GET") ||
     (ghPath === "/graphql" && request.method === "POST");
   if (!allowed) {

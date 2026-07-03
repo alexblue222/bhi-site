@@ -16,7 +16,7 @@ export function ProductCard({ product }: { product: Product }) {
           </span>
         )}
         {product.price === 0 && product.status === "available" && (
-          <span className="absolute left-3 top-3 rounded-full bg-bh-cyan/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-black">Free</span>
+          <span className="absolute left-3 top-3 rounded-full bg-bh-cyan/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-black">Free</span>
         )}
         {product.buyMode === "external" && (
           <span className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm" title={product.externalLabel}>

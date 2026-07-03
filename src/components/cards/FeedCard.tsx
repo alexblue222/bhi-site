@@ -3,8 +3,8 @@ import { Play, X, Lock, ExternalLink, ArrowRight, Eye, Heart, PartyPopper, Pin }
 import { GlassCard } from "../ui/GlassCard";
 import { PlatformBadge } from "../ui/PlatformBadge";
 import { MediaTile } from "../ui/MediaTile";
-import { getArtist, relTime, type FeedItem } from "../../lib/data";
-import { gsap, prefersReducedMotion } from "../../lib/gsapSetup";
+import { getArtist, relTime, PLATFORM_META, type FeedItem } from "../../lib/data";
+import { gsap, ScrollTrigger, prefersReducedMotion } from "../../lib/gsapSetup";
 
 // The centerpiece card family — ONE glass card, six variants (video / post / patreon /
 // release / social / milestone), sized for the single centered feed column. Video cards
@@ -138,11 +138,22 @@ function ExpandingPlayer({ item }: { item: FeedItem }) {
     }
     // Height tween between the 21:9 poster crop and the 16:9 player; the inline
     // height is cleared on complete so the CSS aspect class owns it again (resize-safe).
+    // This is a layout tween (not transform/opacity) — it reflows every card below,
+    // so any not-yet-revealed ScrollTrigger further down the feed now has a stale
+    // start position. Refresh once the reflow settles.
     const target = el.clientWidth * (opening ? 9 / 16 : 9 / 21);
     gsap.fromTo(
       el,
       { height: el.offsetHeight },
-      { height: target, duration: 0.55, ease: "power3.inOut", onComplete: () => gsap.set(el, { clearProps: "height" }) },
+      {
+        height: target,
+        duration: 0.55,
+        ease: "power3.inOut",
+        onComplete: () => {
+          gsap.set(el, { clearProps: "height" });
+          ScrollTrigger.refresh();
+        },
+      },
     );
     if (thumb.current) gsap.to(thumb.current, { autoAlpha: opening ? 0 : 1, duration: 0.45, ease: "power2.out" });
   };
@@ -282,7 +293,7 @@ export function FeedCard({ item }: { item: FeedItem }) {
           {item.memberOnly ? (
             <div className="relative mt-2">
               <p className="select-none leading-relaxed text-slate-400 blur-[6px]">{item.excerpt}</p>
-              <span className="absolute inset-0 flex items-center justify-center gap-2 text-xs font-medium text-[#ff9d8d]">
+              <span className="absolute inset-0 flex items-center justify-center gap-2 text-xs font-medium" style={{ color: PLATFORM_META.patreon.color }}>
                 <Lock className="h-3.5 w-3.5" aria-hidden /> Members only
               </span>
             </div>
@@ -291,7 +302,7 @@ export function FeedCard({ item }: { item: FeedItem }) {
           )}
           <Tags tags={item.tags} />
           <div className="mt-5 text-right">
-            <span className="inline-flex items-center gap-1 text-xs font-medium" style={{ color: "#ff7864" }}>
+            <span className="inline-flex items-center gap-1 text-xs font-medium" style={{ color: PLATFORM_META.patreon.color }}>
               {item.memberOnly ? "Unlock on Patreon" : "Read on Patreon"} <ExternalLink className="h-3 w-3" aria-hidden />
             </span>
           </div>
@@ -305,7 +316,7 @@ export function FeedCard({ item }: { item: FeedItem }) {
           <div className="mt-5 flex gap-5">
             {item.media && (
               <MediaTile tint={item.media.tint} aspect="square" className="h-24 w-24 shrink-0 sm:h-28 sm:w-28">
-                <span className="absolute left-1.5 top-1.5 rounded bg-bh-cyan/90 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">New</span>
+                <span className="absolute left-1.5 top-1.5 rounded bg-bh-cyan/90 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-black">New</span>
               </MediaTile>
             )}
             <div className="min-w-0">
