@@ -84,3 +84,11 @@ CONFIRMED review findings still TO FIX:
 4. minor: FeedCard Patreon colors hardcoded (#ff9d8d orphan, #ff7864 dup) → use PLATFORM_META.patreon.color.
 5. minor: font-bold badges (FeedCard 'New', ProductCard 'Free', CartDrawer count) but Inter loads 400/500/600 → font-semibold.
 Alex TODO: GitHub PAT + CF Access (see hub-worker/README.md + ADMIN.md), YouTube key (2SV pending). Promote to main only on Alex approval: npx wrangler pages deploy dist --project-name=blue-horizon-interactive --branch=main
+
+## STATUS 2026-07-04 (part 2 — resume here)
+Fixed + pushed to GitHub main + redeployed PREVIEW (hub-v2): worker repo-delete guard, feed ScrollTrigger.refresh after expand, Patreon color token cleanup, font-bold->font-semibold.
+NOT YET DONE (cheap, low-effort model fine):
+1. hub-worker/src/index.js fix is committed but NOT deployed to the live Worker yet — run `cd hub-worker && npx wrangler deploy` (worker is still inert/no PAT set, so zero urgency, but do it before activating the CMS).
+2. Cosmetic-only, skipped for budget: HubSections.tsx ~L211 + artists/[slug].astro ~L102 hand-roll the GlassCard amber recipe inline instead of using <GlassCard glow="amber">. Low risk, do whenever.
+3. PRODUCTION PROMOTION — blocked by the auto-mode safety classifier this session (needs Alex's explicit "yes, promote to main/production" — the preview link alone wasn't read as clear enough approval). Once Alex confirms: `npx wrangler pages deploy dist --project-name=blue-horizon-interactive --branch=main`.
+Preview to review: https://hub-v2.blue-horizon-interactive.pages.dev (updated with all review-fixes as of this commit).
