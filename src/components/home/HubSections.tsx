@@ -9,7 +9,7 @@ import { Connect } from "../ui/Connect";
 import { EmptyState } from "../ui/States";
 
 // ─── Home hub tour — the cinematic walk after the hero ────────────────────────
-// One island (default export). The hero above owns its own 600vh scroll length
+// One island (default export). The hero above owns its own 300vh scroll length
 // and emits bhi:hero-progress; these sections simply begin after it. All data
 // arrives serialized from index.astro (server → props) — no client fetching.
 // Motion: GSAP ScrollTrigger reveals + horizon lines that draw in, once each,
@@ -41,7 +41,7 @@ function Section({
   const accentText = accent === "amber" ? "text-bh-amber" : "text-bh-cyan";
   const lineVia = accent === "amber" ? "via-bh-amber/25" : "via-bh-cyan/25";
   return (
-    <section data-section className="relative px-6 py-28 sm:py-36">
+    <section data-section className="relative flex min-h-screen flex-col justify-center px-6 py-28 sm:py-36">
       {/* Thin horizon line — draws in (scaleX 0→1) as the section arrives. */}
       <div
         aria-hidden
@@ -236,7 +236,7 @@ function ArtistsPreview({ artists }: { artists: HomeArtist[] }) {
 
 function ConnectSection() {
   return (
-    <section data-section className="relative overflow-hidden px-6 pb-40 pt-28 sm:pb-48 sm:pt-36">
+    <section data-section className="relative flex min-h-screen flex-col justify-center overflow-hidden px-6 pb-40 pt-28 sm:pb-48 sm:pt-36">
       <div
         aria-hidden
         data-horizon

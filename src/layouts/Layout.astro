@@ -41,5 +41,10 @@ const {
     <Header hero={hero} client:load />
     <slot />
     <Footer />
+    <script>
+      // Stage 1: Lenis smooth/clamped scroll, wired to GSAP ScrollTrigger.
+      import { initSmoothScroll } from "../lib/smoothScroll";
+      initSmoothScroll();
+    </script>
   </body>
 </html>

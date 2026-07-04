@@ -100,7 +100,7 @@ export default function HeroStage() {
   const hintOpacity = useTransform(progress, [0, 0.1], [1, 0]);
 
   return (
-    <section ref={heroRef} className="relative h-[600vh]">
+    <section ref={heroRef} className="relative h-[300vh]">
       <div className="sticky top-0 h-screen w-full overflow-hidden bg-[#01030a]">
         <Particles />
         <PlanetSequence progress={planet} scale={planetScale} />

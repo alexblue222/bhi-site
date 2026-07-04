@@ -21,9 +21,18 @@
 :root { color-scheme: dark; }
 
 html {
-  scroll-behavior: smooth;
+  /* No CSS smooth-scroll — Lenis (src/lib/smoothScroll.ts) owns scrolling and
+     fights native smooth behavior. Native scroll is instant under reduced motion. */
   background: #01030a;
 }
+
+/* Lenis required styles — it toggles these classes on <html> itself. */
+html.lenis,
+html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+.lenis.lenis-smooth iframe { pointer-events: none; }
 body {
   margin: 0;
   font-family: var(--font-body);
