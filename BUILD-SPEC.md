@@ -85,6 +85,11 @@ CONFIRMED review findings still TO FIX:
 5. minor: font-bold badges (FeedCard 'New', ProductCard 'Free', CartDrawer count) but Inter loads 400/500/600 → font-semibold.
 Alex TODO: GitHub PAT + CF Access (see hub-worker/README.md + ADMIN.md), YouTube key (2SV pending). Promote to main only on Alex approval: npx wrangler pages deploy dist --project-name=blue-horizon-interactive --branch=main
 
+## STATUS 2026-07-04 (part 3 — hub v2 COMPLETE)
+All review findings fixed + deployed to PRODUCTION (bluehorizoninteractive.com). Worker security fix live. Amber glow aligned to 32px. Feed hydration verified clean (zero React #418). Impeccable skill installed (not yet run).
+Still deferred (needs Alex, not code): activate CMS (GitHub PAT + Cloudflare Access over /admin), YouTube API key (2SV), add real content, flip noindex off when populated.
+NEXT: run /impeccable to design-polish; then the "Beam Spine / Space Expansion" homepage redesign concept (Blender planet PNG sequences as scroll-driven backgrounds).
+
 ## STATUS 2026-07-04 (part 2 — resume here)
 Fixed + pushed to GitHub main + redeployed PREVIEW (hub-v2): worker repo-delete guard, feed ScrollTrigger.refresh after expand, Patreon color token cleanup, font-bold->font-semibold.
 NOT YET DONE (cheap, low-effort model fine):
