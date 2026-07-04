@@ -10,7 +10,12 @@ import { ShaderBeacon } from "./ShaderBeacon";
 //   0.30–0.58 SHADER flare ignites + beam rises at the beacon point · 0.58–0.72 CROSSFADE to the
 //   full logo · 0.86–1.0 DOCK the mark to the top-left. Add ?p=0.5 to the URL to FREEZE the hero.
 const SRC_W = 1280, SRC_H = 720;
-const RIM_APEX = { x: 640, y: 328 };                // planet's rim apex, plate px (measured in-browser; y raised ~14 to seat the logo horizon on the rim)
+const RIM_APEX = { x: 640, y: 342 };                // planet's rim apex, plate px (geometric anchor)
+// Manual screen-space nudge applied to the logo + flare + beam as ONE group (screen px,
+// +y = down). Live-tune in the browser: add ?dy=<px> and/or ?dx=<px> to the URL, or add
+// ?tune to nudge with the arrow keys (Shift = ±10) and read the value off the on-screen HUD.
+const HERO_DX = 0;
+const HERO_DY = 190;   // ≈2in down — drops the logo horizon onto the Blender earth's surface line
 const MAIN_HZ_FX = 0.500, MAIN_HZ_FY = 0.510;       // logo's baked horizon apex
 const MAIN_FLARE_FX = 0.596, MAIN_FLARE_FY = 0.501; // logo's flare/beacon crossing (where the shader lands)
 
@@ -18,6 +23,16 @@ export default function HeroStage() {
   const progress = useMotionValue(0);
   const heroRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 1280, h: 800 });
+  // Live alignment nudge (see HERO_DX/HERO_DY). Read once from the URL on mount.
+  const [tune, setTune] = useState(() => {
+    if (typeof window === "undefined") return { dx: HERO_DX, dy: HERO_DY, on: false };
+    const q = new URLSearchParams(window.location.search);
+    return {
+      dx: q.has("dx") ? parseFloat(q.get("dx") || "") || 0 : HERO_DX,
+      dy: q.has("dy") ? parseFloat(q.get("dy") || "") || 0 : HERO_DY,
+      on: q.has("tune"),
+    };
+  });
 
   useEffect(() => {
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
@@ -59,6 +74,24 @@ export default function HeroStage() {
     };
   }, [progress]);
 
+  // Arrow-key nudging when ?tune is on — for eyeballing the alignment live.
+  useEffect(() => {
+    if (!tune.on) return;
+    const onKey = (e: KeyboardEvent) => {
+      const step = e.shiftKey ? 10 : 2;
+      let dx = 0, dy = 0;
+      if (e.key === "ArrowUp") dy = -step;
+      else if (e.key === "ArrowDown") dy = step;
+      else if (e.key === "ArrowLeft") dx = -step;
+      else if (e.key === "ArrowRight") dx = step;
+      else return;
+      e.preventDefault();
+      setTune((t) => ({ ...t, dx: t.dx + dx, dy: t.dy + dy }));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [tune.on]);
+
   // The planet is scaled DOWN at rest ("backs out") so its rim curvature matches the tighter
   // logo horizon. Tune REST_SCALE to fit; the logo anchors to the scaled rim apex.
   const REST_SCALE = 0.36;
@@ -68,8 +101,8 @@ export default function HeroStage() {
   const cx = size.w / 2, cy = size.h / 2;
   const rawApexX = (size.w - SRC_W * s) / 2 + RIM_APEX.x * s;
   const rawApexY = (size.h - SRC_H * s) / 2 + RIM_APEX.y * s;
-  const apexX = cx + REST_SCALE * (rawApexX - cx);
-  const apexY = cy + REST_SCALE * (rawApexY - cy);
+  const apexX = cx + REST_SCALE * (rawApexX - cx) + tune.dx;
+  const apexY = cy + REST_SCALE * (rawApexY - cy) + tune.dy;
 
   const mainW = Math.min(940, size.w * 0.9);
   // Place the full logo so its baked horizon apex sits on the planet rim apex.
@@ -137,6 +170,13 @@ export default function HeroStage() {
           <span className="h-8 w-px animate-pulse bg-gradient-to-b from-[#58d6ff] to-transparent" />
         </motion.div>
       </div>
+      {tune.on && (
+        <div className="fixed left-3 top-3 z-[100] rounded-md bg-black/85 px-3 py-2 font-mono text-xs leading-relaxed text-bh-cyan ring-1 ring-bh-cyan/30">
+          <div>hero align · arrows nudge (Shift ±10)</div>
+          <div className="text-sm text-white">dx={tune.dx}&nbsp;&nbsp;dy={tune.dy}</div>
+          <div className="text-slate-400">tell me: HERO_DX={tune.dx} HERO_DY={tune.dy}</div>
+        </div>
+      )}
     </section>
   );
 }
