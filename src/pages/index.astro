@@ -2,19 +2,15 @@
 import Layout from "../layouts/Layout.astro";
 import HeroStage from "../components/hero/HeroStage.tsx";
 import Spine from "../components/hero/Spine.tsx";
-import HubSections from "../components/home/HubSections";
-import { getArtists, getStaticFeed } from "../lib/content";
-
-// Server → island props: git-content feed (pins + blog) and the roster.
-// The island does no client fetching — data is baked in at build time.
-const feed = (await getStaticFeed()).slice(0, 3);
-const artists = await getArtists();
+import HomeScenes from "../components/home/HomeScenes.tsx";
+// HubSections (the rich content homepage) is kept in the codebase for later — Stage 3
+// swaps in the scene scaffold to nail scroll + spacing first, with placeholder planets.
 ---
 
 <Layout hero>
   <HeroStage client:only="react" />
   <Spine client:only="react" />
   <main class="relative z-10 bg-[#01030a]">
-    <HubSections client:visible feed={feed} artists={artists} />
+    <HomeScenes client:load />
   </main>
 </Layout>
