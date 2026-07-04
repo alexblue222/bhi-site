@@ -16,11 +16,16 @@ type KF = { p: number; xf: number; o: number; draw: number };
 // Default intro keyframes — a starting guess. Alex refines with ?edit, hits K, and I
 // paste the result here. xf = x as fraction of viewport width · o = opacity · draw =
 // vertical draw 0..1 (the beam growing downward).
+// Authored by Alex in the ?edit tool: beam draws down the centre, then peels right
+// into the resting spine. (draw=0 = invisible, so it stays hidden until p≈0.46.)
 const SPINE_KF: KF[] = [
-  { p: 0.0, xf: 0.5, o: 0, draw: 0 },
-  { p: 0.85, xf: 0.5, o: 0, draw: 0 },
-  { p: 0.9, xf: 0.5, o: 0.85, draw: 1 },
-  { p: 1.0, xf: 0.965, o: 1, draw: 1 },
+  { p: 0.0, xf: 0.549, o: 1, draw: 0 },
+  { p: 0.461, xf: 0.549, o: 1, draw: 0 },
+  { p: 0.576, xf: 0.549, o: 1, draw: 0.58 },
+  { p: 0.691, xf: 0.549, o: 1, draw: 0.74 },
+  { p: 0.806, xf: 0.549, o: 1, draw: 0.8 },
+  { p: 0.921, xf: 0.737, o: 1, draw: 1 },
+  { p: 1.0, xf: 0.925, o: 1, draw: 1 },
 ];
 
 const CYAN = "#58d6ff";
@@ -166,7 +171,9 @@ export default function Spine() {
     return () => window.removeEventListener("keydown", onKey);
   }, [edit, live, kfs]);
 
-  const formed = frame.o > 0.6 && frame.draw > 0.8; // nodes appear once the spine is basically formed
+  // Nodes fade in ONLY as the spine settles into its final right position (xf 0.86→0.925),
+  // so they don't show during the descend/slide. Scroll-linked, not a delayed CSS transition.
+  const nodeOpacity = Math.max(0, Math.min(1, (frame.xf - 0.86) / (0.925 - 0.86)));
 
   return (
     <>
@@ -186,8 +193,8 @@ export default function Spine() {
       {/* roadmap nodes — fade in once the spine has formed on the right */}
       {nodes.length > 0 && (
         <div
-          className="fixed top-0 z-40 h-screen transition-opacity duration-500"
-          style={{ left: `${frame.xf * 100}vw`, opacity: formed ? 1 : 0, pointerEvents: formed ? "auto" : "none" }}
+          className="fixed top-0 z-40 h-screen"
+          style={{ left: `${frame.xf * 100}vw`, opacity: nodeOpacity, pointerEvents: nodeOpacity > 0.5 ? "auto" : "none" }}
         >
           {nodes.map((n, i) => {
             const top = nodes.length > 1 ? 22 + (i * 56) / (nodes.length - 1) : 50;
