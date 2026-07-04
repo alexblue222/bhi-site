@@ -15,7 +15,12 @@ const RIM_APEX = { x: 640, y: 342 };                // planet's rim apex, plate 
 // +y = down). Live-tune in the browser: add ?dy=<px> and/or ?dx=<px> to the URL, or add
 // ?tune to nudge with the arrow keys (Shift = ±10) and read the value off the on-screen HUD.
 const HERO_DX = 0;
-const HERO_DY = -4;    // eyeballed by Alex on the live render — seats logo horizon + flare + beam on the earth rim
+const HERO_DY = -4;    // LOGO offset — Alex confirmed perfect, do not touch.
+// FLARE/BEAM (WebGL shader) offset, applied to the shader anchor ONLY — independent of the
+// logo. +x = right, +y = down (screen px). Live-tune: ?fdx=<px> / ?fdy=<px>, or ?tune + arrow
+// keys (Shift ±10). The logo's own baked flare stays; this moves only the shader flare/beam.
+const FLARE_DX = 0;
+const FLARE_DY = 0;
 const MAIN_HZ_FX = 0.500, MAIN_HZ_FY = 0.510;       // logo's baked horizon apex
 const MAIN_FLARE_FX = 0.596, MAIN_FLARE_FY = 0.501; // logo's flare/beacon crossing (where the shader lands)
 
@@ -24,12 +29,13 @@ export default function HeroStage() {
   const heroRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 1280, h: 800 });
   // Live alignment nudge (see HERO_DX/HERO_DY). Read once from the URL on mount.
+  // Live FLARE nudge (the shader flare/beam only — the logo is locked). Read once from URL.
   const [tune, setTune] = useState(() => {
-    if (typeof window === "undefined") return { dx: HERO_DX, dy: HERO_DY, on: false };
+    if (typeof window === "undefined") return { dx: FLARE_DX, dy: FLARE_DY, on: false };
     const q = new URLSearchParams(window.location.search);
     return {
-      dx: q.has("dx") ? parseFloat(q.get("dx") || "") || 0 : HERO_DX,
-      dy: q.has("dy") ? parseFloat(q.get("dy") || "") || 0 : HERO_DY,
+      dx: q.has("fdx") ? parseFloat(q.get("fdx") || "") || 0 : FLARE_DX,
+      dy: q.has("fdy") ? parseFloat(q.get("fdy") || "") || 0 : FLARE_DY,
       on: q.has("tune"),
     };
   });
@@ -101,8 +107,8 @@ export default function HeroStage() {
   const cx = size.w / 2, cy = size.h / 2;
   const rawApexX = (size.w - SRC_W * s) / 2 + RIM_APEX.x * s;
   const rawApexY = (size.h - SRC_H * s) / 2 + RIM_APEX.y * s;
-  const apexX = cx + REST_SCALE * (rawApexX - cx) + tune.dx;
-  const apexY = cy + REST_SCALE * (rawApexY - cy) + tune.dy;
+  const apexX = cx + REST_SCALE * (rawApexX - cx) + HERO_DX;
+  const apexY = cy + REST_SCALE * (rawApexY - cy) + HERO_DY;
 
   const mainW = Math.min(940, size.w * 0.9);
   // Place the full logo so its baked horizon apex sits on the planet rim apex.
@@ -142,7 +148,7 @@ export default function HeroStage() {
         <motion.div className="pointer-events-none absolute inset-0 bg-[#010207]" style={{ opacity: darkOpacity }} />
 
         {/* WebGL beacon — the glowing flare + beam that ignite at the beacon point; dissolves as the logo resolves. */}
-        <ShaderBeacon progress={progress} anchor={{ x: beaconX / size.w, y: 1 - beaconY / size.h }} />
+        <ShaderBeacon progress={progress} anchor={{ x: (beaconX + tune.dx) / size.w, y: 1 - (beaconY + tune.dy) / size.h }} />
 
         {/* Full logo resolves in, then docks to the corner (scales about its flare point). */}
         <motion.img
@@ -172,9 +178,9 @@ export default function HeroStage() {
       </div>
       {tune.on && (
         <div className="fixed left-3 top-3 z-[100] rounded-md bg-black/85 px-3 py-2 font-mono text-xs leading-relaxed text-bh-cyan ring-1 ring-bh-cyan/30">
-          <div>hero align · arrows nudge (Shift ±10)</div>
-          <div className="text-sm text-white">dx={tune.dx}&nbsp;&nbsp;dy={tune.dy}</div>
-          <div className="text-slate-400">tell me: HERO_DX={tune.dx} HERO_DY={tune.dy}</div>
+          <div>FLARE align · arrows nudge (Shift ±10)</div>
+          <div className="text-sm text-white">fdx={tune.dx}&nbsp;&nbsp;fdy={tune.dy}</div>
+          <div className="text-slate-400">tell me: FLARE_DX={tune.dx} FLARE_DY={tune.dy}</div>
         </div>
       )}
     </section>
