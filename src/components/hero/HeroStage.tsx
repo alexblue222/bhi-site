@@ -19,8 +19,8 @@ const HERO_DY = -4;    // LOGO offset — Alex confirmed perfect, do not touch.
 // FLARE/BEAM (WebGL shader) offset, applied to the shader anchor ONLY — independent of the
 // logo. +x = right, +y = down (screen px). Live-tune: ?fdx=<px> / ?fdy=<px>, or ?tune + arrow
 // keys (Shift ±10). The logo's own baked flare stays; this moves only the shader flare/beam.
-const FLARE_DX = 0;
-const FLARE_DY = 0;
+const FLARE_DX = 8;
+const FLARE_DY = 26;   // eyeballed by Alex on the live render — seats the shader flare/beam on the earth beacon point
 const MAIN_HZ_FX = 0.500, MAIN_HZ_FY = 0.510;       // logo's baked horizon apex
 const MAIN_FLARE_FX = 0.596, MAIN_FLARE_FY = 0.501; // logo's flare/beacon crossing (where the shader lands)
 
