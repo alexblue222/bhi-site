@@ -21,7 +21,14 @@ Guiding decisions already locked from the brainstorm:
 
 ---
 
-## Stage 1 — Scroll foundation (Lenis + pacing) · ~15%
+## Stage 1 — Scroll foundation (Lenis + pacing) · ~15% · ✅ DONE 2026-07-04
+**Shipped (preview `stage1-scroll.blue-horizon-interactive.pages.dev`, on git main):** Lenis wired
+to ScrollTrigger (`src/lib/smoothScroll.ts`, inited in Layout, reduced-motion safe); removed global
+`scroll-behavior:smooth`; hero 600vh→300vh; home sections `min-h-screen` (each now 1.0vp, page
+9.7→7.4vp, skip-past gone); `ScrollTrigger.refresh()` after fonts. NOT on production. **Open:** Alex
+to eyeball the smooth-scroll *feel* in a foreground browser (rAF is throttled in Claude's tab, so
+that one thing is unverified here). Next: Stage 2.
+
 **Goal:** kill the current jank. The "not smooth + jumping past sections" problem, fixed, on the
 *existing* homepage — no redesign yet. This is the testbed everything else sits on.
 - Wire **Lenis** (installed) to GSAP ScrollTrigger (`lenis.on('scroll', ScrollTrigger.update)` + gsap ticker; `lerp` tuned for the clamped/inertial feel).

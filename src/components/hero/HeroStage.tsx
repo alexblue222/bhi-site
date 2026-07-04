@@ -10,7 +10,7 @@ import { ShaderBeacon } from "./ShaderBeacon";
 //   0.30–0.58 SHADER flare ignites + beam rises at the beacon point · 0.58–0.72 CROSSFADE to the
 //   full logo · 0.86–1.0 DOCK the mark to the top-left. Add ?p=0.5 to the URL to FREEZE the hero.
 const SRC_W = 1280, SRC_H = 720;
-const RIM_APEX = { x: 640, y: 342 };                // planet's rim apex, plate px (measured in-browser)
+const RIM_APEX = { x: 640, y: 328 };                // planet's rim apex, plate px (measured in-browser; y raised ~14 to seat the logo horizon on the rim)
 const MAIN_HZ_FX = 0.500, MAIN_HZ_FY = 0.510;       // logo's baked horizon apex
 const MAIN_FLARE_FX = 0.596, MAIN_FLARE_FY = 0.501; // logo's flare/beacon crossing (where the shader lands)
 
