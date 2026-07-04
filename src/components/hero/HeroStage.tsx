@@ -15,7 +15,7 @@ const RIM_APEX = { x: 640, y: 342 };                // planet's rim apex, plate 
 // +y = down). Live-tune in the browser: add ?dy=<px> and/or ?dx=<px> to the URL, or add
 // ?tune to nudge with the arrow keys (Shift = ±10) and read the value off the on-screen HUD.
 const HERO_DX = 0;
-const HERO_DY = 190;   // ≈2in down — drops the logo horizon onto the Blender earth's surface line
+const HERO_DY = -4;    // eyeballed by Alex on the live render — seats logo horizon + flare + beam on the earth rim
 const MAIN_HZ_FX = 0.500, MAIN_HZ_FY = 0.510;       // logo's baked horizon apex
 const MAIN_FLARE_FX = 0.596, MAIN_FLARE_FY = 0.501; // logo's flare/beacon crossing (where the shader lands)
 
