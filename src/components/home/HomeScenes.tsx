@@ -25,14 +25,14 @@ type Scene = {
   side: "left" | "right"; // card side — always opposite the featured planet
 };
 
-// v6 five-act structure: feed=Earth · games=Earth closer · creators=Moon focus ·
-// frontier=Mars focus · connect=top-down trio. Copy is placeholder-friendly — edit away.
+// Three-card structure (frontier/connect deferred to the next animation pass):
+// feed = the big closer Earth (the hero rolls back INTO it) · games = the
+// Earth+Moon pair · creators = the three worlds grouped left, seen from above.
+// The Mars sweep + crane play as one cinematic transition between the last two.
 const SCENES: Scene[] = [
-  { id: "feed", eyebrow: "Transmissions", title: "The Feed", body: "Every video, drop and devlog — the whole signal, in one stream.", cta: { href: "/feed", label: "Open the feed" }, accent: "#58d6ff", side: "left" },
-  { id: "games", eyebrow: "In production", title: "The Games", body: "The interactive worlds we're building — and the tech that renders them.", cta: { href: "/games", label: "Explore the games" }, accent: "#58d6ff", side: "right" },
-  { id: "artists", eyebrow: "The people", title: "The Creators", body: "The artists and builders behind Blue Horizon.", cta: { href: "/artists", label: "Meet the creators" }, accent: "#ffb347", side: "left" },
-  { id: "frontier", eyebrow: "Terraforming", title: "The Frontier", body: "Mars is the proving ground — the next world we're bringing to life.", cta: { href: "/games", label: "See what's next" }, accent: "#ff9e64", side: "right" },
-  { id: "connect", eyebrow: "The mission", title: "The future is not given to us. It is built.", body: "Follow along on every platform — everything we make lands here first.", cta: { href: "/contact", label: "Connect" }, accent: "#ffb347", side: "right" },
+  { id: "feed", eyebrow: "Transmissions", title: "The Feed", body: "Every video, drop and devlog — the whole signal, in one stream.", cta: { href: "/feed", label: "Open the feed" }, accent: "#58d6ff", side: "right" },
+  { id: "games", eyebrow: "In production", title: "The Games", body: "The interactive worlds we're building — and the tech that renders them.", cta: { href: "/games", label: "Explore the games" }, accent: "#58d6ff", side: "left" },
+  { id: "artists", eyebrow: "The people", title: "The Creators", body: "The artists and builders behind Blue Horizon.", cta: { href: "/artists", label: "Meet the creators" }, accent: "#ffb347", side: "right" },
 ];
 
 // The whole 1–1200 choreography at stride 2 (see bh_publish_frames.py "master").
@@ -67,9 +67,29 @@ function cardPresence(p: number) {
 // reads as camera drift. Kill/retune when Alex re-authors the animation.
 const PAIR_NUDGE_PX = 150;
 function plateNudge(masterP: number) {
-  const in_ = stepIn(0.38, 0.44, masterP);   // ramp in through the moon's arrival
-  const out = 1 - stepIn(0.56, 0.62, masterP); // release as Mars takes over
+  const in_ = stepIn(0.30, 0.36, masterP);   // ramp in through the moon's arrival
+  const out = 1 - stepIn(0.56, 0.62, masterP); // release into the grand transition
   return PAIR_NUDGE_PX * Math.min(in_, out);
+}
+
+// Non-linear scroll→frame map for the 3-card structure: the hero roll lands on
+// the approach to the BIG Earth (feed hold f275-410), games holds the pair
+// (f535-670), then the whole Mars sweep + crane plays as one cinematic
+// transition into the settled trio (creators, f1075-1200). Piecewise linear;
+// waypoints are (masterProg, UE frame).
+const FRAME_MAP: [number, number][] = [
+  [0, 34], [0.08, 275], [0.22, 410],
+  [0.36, 520], [0.58, 670],
+  [0.78, 1075], [1, 1200],
+];
+function mapFrame(p: number) {
+  let a = FRAME_MAP[0], b = FRAME_MAP[FRAME_MAP.length - 1];
+  for (let k = 0; k < FRAME_MAP.length - 1; k++) {
+    if (p >= FRAME_MAP[k][0] && p <= FRAME_MAP[k + 1][0]) { a = FRAME_MAP[k]; b = FRAME_MAP[k + 1]; break; }
+  }
+  const t = (p - a[0]) / (b[0] - a[0] || 1);
+  const f = a[1] + t * (b[1] - a[1]);
+  return (f - 1) / 1198; // UE frame → sequence progress (600 webp @ stride 2)
 }
 
 // ── ?perf: temporary stall profiler ──────────────────────────────────────────
@@ -244,9 +264,9 @@ export default function HomeScenes() {
               // Hold frame 1 while the plate fades up under the logo (0.74–0.86),
               // then roll frames 1–34 as the logo pulls away to the corner
               // (0.86–1.0), smoothstepped: drifts from stillness, settles soft.
-              const HEAD_F = 34 / (MASTER.frameCount * 2 - 1);
+              // Scenes then follow the non-linear FRAME_MAP (3-card structure).
               const roll = heroP === null ? 0 : Math.min(1, Math.max(0, (heroP - 0.86) / 0.14));
-              return masterProg > 0 ? HEAD_F + masterProg * (1 - HEAD_F) : HEAD_F * stepIn(0, 1, roll);
+              return masterProg > 0 ? mapFrame(masterProg) : mapFrame(0) * stepIn(0, 1, roll);
             })()}
             srcBase={MASTER.srcBase}
             frameCount={MASTER.frameCount}
