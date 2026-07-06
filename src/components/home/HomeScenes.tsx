@@ -234,8 +234,18 @@ export default function HomeScenes() {
           // null = hero hasn't reported yet (mount race) — stay hidden, no flash over the hero
           style={{ opacity: heroP === null ? 0 : Math.min(1, Math.max(0, (heroP - 0.74) / 0.18)) }}
         >
+          {/* Early roll-out: the animation starts the moment the logo has formed
+              (heroP 0.74+), playing the first ~55 frames (Earth's departure) slowly
+              through the dock — eased out so it moves at once and settles softly
+              into the feed park. The scenes then scrub frames 55→1200, so every
+              card↔planet pairing and hold stays exactly as tuned. */}
           <ScenePlanetSequence
-            progress={masterProg}
+            progress={(() => {
+              const HEAD_F = 55 / (MASTER.frameCount * 2 - 1); // departure frames 1–55
+              const roll = heroP === null ? 0 : Math.min(1, Math.max(0, (heroP - 0.74) / 0.26));
+              const eased = 1 - (1 - roll) * (1 - roll); // moves at once, settles soft
+              return masterProg > 0 ? HEAD_F + masterProg * (1 - HEAD_F) : HEAD_F * eased;
+            })()}
             srcBase={MASTER.srcBase}
             frameCount={MASTER.frameCount}
             offsetX={align.x + plateNudge(masterProg)}
