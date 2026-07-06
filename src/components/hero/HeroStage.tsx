@@ -28,6 +28,9 @@ export default function HeroStage() {
   const progress = useMotionValue(0);
   const heroRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 1280, h: 800 });
+  // Drop the fixed logo layer from the tree once the dock completes — an invisible
+  // full-screen mix-blend layer still costs the compositor every frame (PERF-NOTES).
+  const [logoLive, setLogoLive] = useState(true);
   // Live alignment nudge (see HERO_DX/HERO_DY). Read once from the URL on mount.
   // Live FLARE nudge (the shader flare/beam only — the logo is locked). Read once from URL.
   const [tune, setTune] = useState(() => {
@@ -47,7 +50,10 @@ export default function HeroStage() {
     window.addEventListener("resize", onSize);
 
     // Broadcast hero progress so the header can hold its corner logo back until the dock lands.
-    const emit = (v: number) => window.dispatchEvent(new CustomEvent("bhi:hero-progress", { detail: v }));
+    const emit = (v: number) => {
+      window.dispatchEvent(new CustomEvent("bhi:hero-progress", { detail: v }));
+      setLogoLive(v < 0.995); // unmount the blend layer after dock; restores on scroll-up
+    };
     const unsubEmit = progress.on("change", emit);
 
     const frozen = new URLSearchParams(window.location.search).get("p");
@@ -174,7 +180,7 @@ export default function HeroStage() {
           context, so a blend on the img would only see the (empty) wrapper and the
           logo's black plate would stop dropping out. Blending the whole layer
           composites it against the page below — black vanishes, logo stays. */}
-      <div className="pointer-events-none fixed inset-0 z-[8]" style={{ mixBlendMode: "screen" }}>
+      {logoLive && <div className="pointer-events-none fixed inset-0 z-[8]" style={{ mixBlendMode: "screen" }}>
         <motion.img
           src="/brand/logo-main.webp" alt="Blue Horizon Interactive" draggable={false}
           className="pointer-events-none absolute select-none"
@@ -184,7 +190,7 @@ export default function HeroStage() {
             transformOrigin: `${MAIN_FLARE_FX * 100}% ${MAIN_FLARE_FY * 100}%`,
           }}
         />
-      </div>
+      </div>}
       {tune.on && (
         <div className="fixed left-3 top-3 z-[100] rounded-md bg-black/85 px-3 py-2 font-mono text-xs leading-relaxed text-bh-cyan ring-1 ring-bh-cyan/30">
           <div>FLARE align · arrows nudge (Shift ±10)</div>

@@ -20,11 +20,11 @@ raster/compositor (GPU) stalls. (Re-verify: longtask observer was re-registered 
 `{type, buffered}` late in the session — confirm it fires at all in Opera.)
 
 ## Prime remaining suspects (in attack order)
-1. **Two stacked full-screen blended canvases.** The hero's PlanetSequence canvas stays
-   mounted+compositing UNDER the master canvas forever after the reveal. Both are
-   fixed, viewport-sized, `mix-blend-mode: screen` + CSS `filter` at DPR 2 → enormous
-   re-raster area every frame. Fix candidates: unmount/hide the hero canvas once
-   heroP == 1 and the master has taken over; drop to ONE canvas.
+1. ~~Hero's fixed logo layer (full-screen mix-blend, persisted at opacity 0 forever)~~
+   **DONE 2026-07-06**: unmounts at heroP>=0.995, restores on scroll-up (HeroStage logoLive).
+   Remaining: the hero *stage* canvases (PlanetSequence/ShaderBeacon/Particles) live in a
+   sticky section that scrolls offscreen naturally — verify they're actually skipped by the
+   compositor; consider suspending their rAF loops when out of view.
 2. **CSS filter on the canvas** (`brightness/contrast/saturate`) — bake the grade into
    the webp frames at publish time (ffmpeg `eq=`) and delete the filter.
 3. **mix-blend-screen may be unnecessary** — the backing div is near-black (#01030a);

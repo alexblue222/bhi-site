@@ -43,7 +43,23 @@ const MASTER = { srcBase: "/planets/master", frameCount: 600 };
 // or set directly via ?px= ?py= ?ps= — then bake the numbers here.
 const MASTER_ALIGN = { x: 0, y: 0, s: 1 };
 
-const DEFAULT_VH = 280; // scroll length per scene (viewport heights) — longer card dwell
+const DEFAULT_VH = 330; // scroll length per scene (viewport heights) — roomy, unhurried
+
+// Scroll-linked card presence: cards fade+rise in as their scene parks, breathe
+// through the hold, and drift out as the planets release — so the tiles move WITH
+// the choreography instead of popping. Bands are fractions of the scene's pin.
+const stepIn = (a: number, b: number, x: number) => {
+  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+};
+function cardPresence(p: number) {
+  const enter = stepIn(0.05, 0.18, p);
+  const exit = 1 - stepIn(0.82, 0.96, p);
+  return {
+    opacity: Math.min(enter, exit),
+    y: (1 - enter) * 30 - (1 - exit) * 24, // rises in, drifts up and away
+  };
+}
 
 // ── ?perf: temporary stall profiler ──────────────────────────────────────────
 // Watches main-thread rAF gaps, long tasks, and scroll deltas; paints a small
@@ -231,10 +247,22 @@ export default function HomeScenes() {
           >
             <div className="sticky top-0 flex h-screen items-center overflow-hidden">
               {/* each card sits in the open space opposite its featured planet —
-                  side is authored per scene, mirrored into the render's camera framing */}
+                  side is authored per scene; presence is scroll-linked so the tile
+                  arrives as the planets park and releases as they move on */}
               <div className="relative z-10 mx-auto w-full max-w-6xl px-6 sm:px-10">
-                <div className={s.side === "right" ? "max-w-md ml-auto" : "max-w-md"}>
-                  <p className="text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: s.accent }}>{s.eyebrow}</p>
+                {(() => {
+                  const pr = cardPresence(prog[i] ?? 0);
+                  return (
+                <div
+                  className={s.side === "right" ? "max-w-md ml-auto" : "max-w-md"}
+                  style={{
+                    opacity: pr.opacity,
+                    transform: `translateY(${pr.y - 24}px)`, // slight upward bias: planets ride low
+                    willChange: "opacity, transform",
+                  }}
+                >
+                  <span className="block h-[2px] w-10 rounded-full" style={{ background: s.accent }} />
+                  <p className="mt-4 text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: s.accent }}>{s.eyebrow}</p>
                   <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight text-slate-100 sm:text-5xl lg:text-6xl">{s.title}</h2>
                   <p className="mt-5 max-w-sm leading-relaxed text-slate-400">{s.body}</p>
                   <a
@@ -245,6 +273,8 @@ export default function HomeScenes() {
                     {s.cta.label} <span aria-hidden>→</span>
                   </a>
                 </div>
+                  );
+                })()}
               </div>
             </div>
           </section>
