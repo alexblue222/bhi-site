@@ -78,7 +78,7 @@ function plateNudge(masterP: number) {
 // transition into the settled trio (creators, f1075-1200). Piecewise linear;
 // waypoints are (masterProg, UE frame).
 const FRAME_MAP: [number, number][] = [
-  [0, 34], [0.08, 275], [0.22, 410],
+  [0, 78], [0.08, 275], [0.22, 410],
   [0.36, 520], [0.58, 670],
   [0.78, 1075], [1, 1200],
 ];
@@ -255,18 +255,20 @@ export default function HomeScenes() {
           style={{ opacity: heroP === null ? 0 : Math.min(1, Math.max(0, (heroP - 0.74) / 0.18)) }}
         >
           {/* Early roll-out: the animation starts the moment the logo has formed
-              (heroP 0.74+), playing the first ~55 frames (Earth's departure) slowly
-              through the dock — eased out so it moves at once and settles softly
-              into the feed park. The scenes then scrub frames 55→1200, so every
-              card↔planet pairing and hold stays exactly as tuned. */}
+              (heroP 0.74+), playing frames 1–78 (Earth's departure) through the
+              dock. The scenes then scrub frames 78→1200, so every card↔planet
+              pairing and hold stays exactly as tuned. */}
           <ScenePlanetSequence
             progress={(() => {
               // Hold frame 1 while the plate fades up under the logo (0.74–0.86),
-              // then roll frames 1–34 as the logo pulls away to the corner
-              // (0.86–1.0), smoothstepped: drifts from stillness, settles soft.
-              // Scenes then follow the non-linear FRAME_MAP (3-card structure).
+              // then roll frames 1–78 as the logo pulls away (0.86–1.0), LINEAR:
+              // the render itself eases out of frame-1 stillness, so a constant
+              // scrub keeps the frame rate high enough to read smooth (the old
+              // smoothstep crawled at both ends → visible stepping), and the rate
+              // is velocity-matched to the first FRAME_MAP segment (≈2.8 frames
+              // per vh either side of the handoff — no kink at the junction).
               const roll = heroP === null ? 0 : Math.min(1, Math.max(0, (heroP - 0.86) / 0.14));
-              return masterProg > 0 ? mapFrame(masterProg) : mapFrame(0) * stepIn(0, 1, roll);
+              return masterProg > 0 ? mapFrame(masterProg) : mapFrame(0) * roll;
             })()}
             srcBase={MASTER.srcBase}
             frameCount={MASTER.frameCount}
