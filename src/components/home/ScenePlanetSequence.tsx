@@ -41,22 +41,24 @@ export function ScenePlanetSequence({
     const ctx = canvas.getContext("2d")!;
 
     const ready = (im?: HTMLImageElement) => !!im && im.complete && im.naturalWidth > 0;
-    const draw = (idx: number) => {
-      // Prefer the decode-pinned bitmap (zero decode cost, ever), then the raw
-      // image, then the nearest loaded neighbour while frames stream in.
-      let img: ImageBitmap | HTMLImageElement | undefined = bmpRef.current.get(idx);
+    const pick = (i: number): ImageBitmap | HTMLImageElement | undefined => {
+      const b = bmpRef.current.get(i);
+      if (b) return b;
+      const el = imgsRef.current[i];
+      return ready(el) ? el : undefined;
+    };
+    // Fractional index: cross-fade the two neighbouring frames so slow scrubs
+    // (the handoff roll-out especially) glide between published frames instead
+    // of stepping; at speed the blend reads as motion blur.
+    const draw = (fidx: number) => {
+      const i0 = Math.max(0, Math.floor(fidx));
+      const t = Math.min(1, Math.max(0, fidx - i0));
+      let img = pick(i0);
       if (!img) {
-        let el = imgsRef.current[idx];
-        if (!ready(el)) {
-          for (let k = 1; k <= 12; k++) {
-            const back = bmpRef.current.get(idx - k) ?? imgsRef.current[idx - k];
-            const fwd = bmpRef.current.get(idx + k) ?? imgsRef.current[idx + k];
-            if (back instanceof ImageBitmap || ready(back as HTMLImageElement)) { img = back as any; break; }
-            if (fwd instanceof ImageBitmap || ready(fwd as HTMLImageElement)) { img = fwd as any; break; }
-          }
-          if (!img) return;
-        } else img = el;
+        for (let k = 1; k <= 12 && !img; k++) img = pick(i0 - k) ?? pick(i0 + k);
+        if (!img) return;
       }
+      const next = t > 0.02 ? pick(i0 + 1) : undefined;
       const iw = img instanceof ImageBitmap ? img.width : img.naturalWidth;
       const ih = img instanceof ImageBitmap ? img.height : img.naturalHeight;
       const cw = window.innerWidth, ch = window.innerHeight;
@@ -66,6 +68,11 @@ export function ScenePlanetSequence({
       const cx = cw / 2 + a.x, cy = ch / 2 + a.y;
       ctx.clearRect(0, 0, cw, ch);
       ctx.drawImage(img, cx - w / 2, cy - h / 2, w, h);
+      if (next) {
+        ctx.globalAlpha = t;
+        ctx.drawImage(next, cx - w / 2, cy - h / 2, w, h);
+        ctx.globalAlpha = 1;
+      }
       // Feather the plate edges so the planet floats (see hero/PlanetSequence.tsx).
       ctx.save();
       ctx.globalCompositeOperation = "destination-in";
@@ -105,9 +112,10 @@ export function ScenePlanetSequence({
 
   // Redraw on scroll-progress change + maintain the decode-pinned window.
   useEffect(() => {
-    const idx = Math.min(frameCount - 1, Math.max(0, Math.round(progress * (frameCount - 1))));
-    currentRef.current = idx;
-    drawRef.current(idx);
+    const fidx = Math.min(frameCount - 1, Math.max(0, progress * (frameCount - 1)));
+    const idx = Math.round(fidx); // integer anchor for the bitmap window
+    currentRef.current = fidx;    // draw uses the fraction to cross-fade
+    drawRef.current(fidx);
     // Sliding bitmap window: generous ahead (scroll direction is usually down),
     // some behind. Primed from progress 0, so the opening buffer decodes during
     // the hero — the "loading screen" without a loading screen.
@@ -126,7 +134,7 @@ export function ScenePlanetSequence({
         const cur = currentRef.current;
         if (k < cur - 24 || k > cur + 48) { b.close(); return; } // window moved on
         bmps.set(k, b);
-        if (k === cur) drawRef.current(k); // upgrade the visible frame in place
+        if (Math.abs(k - cur) < 1) drawRef.current(cur); // upgrade the visible frame in place
       }).catch(() => pending.delete(k));
     }
   }, [progress, frameCount]);
