@@ -147,6 +147,11 @@ export default function HeroStage() {
   return (
     <section ref={heroRef} className="relative h-[300vh]">
       <div className="sticky top-0 h-screen w-full overflow-hidden bg-[#01030a]">
+        {/* Suspend the whole hero render stack once the dock completes: Particles +
+            ShaderBeacon + PlanetSequence keep rAF/WebGL loops alive even when the
+            sticky stage is scrolled offscreen — prime suspect for the resume
+            stutter (GPU work, no longtasks). Remounts on scroll-up. */}
+        {logoLive && <>
         <Particles />
         <PlanetSequence progress={planet} scale={planetScale} />
 
@@ -155,6 +160,7 @@ export default function HeroStage() {
 
         {/* WebGL beacon — the glowing flare + beam that ignite at the beacon point; dissolves as the logo resolves. */}
         <ShaderBeacon progress={progress} anchor={{ x: (beaconX + tune.dx) / size.w, y: 1 - (beaconY + tune.dy) / size.h }} />
+        </>}
 
         {/* Vignette */}
         <div

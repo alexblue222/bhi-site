@@ -26,6 +26,11 @@ export function ScenePlanetSequence({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgsRef = useRef<HTMLImageElement[]>([]);
+  // Decode-pinned frame buffer: ImageBitmaps are GPU-ready and immune to the
+  // browser's decoded-image cache eviction (the pause->resume freeze source).
+  // A sliding window around the playhead stays decoded; the rest is released.
+  const bmpRef = useRef<Map<number, ImageBitmap>>(new Map());
+  const pendingRef = useRef<Set<number>>(new Set());
   const currentRef = useRef(-1);
   const drawRef = useRef<(idx: number) => void>(() => {});
   const alignRef = useRef({ x: offsetX, y: offsetY, s: scale });
@@ -37,21 +42,27 @@ export function ScenePlanetSequence({
 
     const ready = (im?: HTMLImageElement) => !!im && im.complete && im.naturalWidth > 0;
     const draw = (idx: number) => {
-      let img = imgsRef.current[idx];
-      if (!ready(img)) {
-        // Nearest loaded neighbour instead of freezing on a stale frame while
-        // the sequence is still streaming in.
-        for (let k = 1; k <= 12; k++) {
-          const back = imgsRef.current[idx - k], fwd = imgsRef.current[idx + k];
-          if (ready(back)) { img = back; break; }
-          if (ready(fwd)) { img = fwd; break; }
-        }
-        if (!ready(img)) return;
+      // Prefer the decode-pinned bitmap (zero decode cost, ever), then the raw
+      // image, then the nearest loaded neighbour while frames stream in.
+      let img: ImageBitmap | HTMLImageElement | undefined = bmpRef.current.get(idx);
+      if (!img) {
+        let el = imgsRef.current[idx];
+        if (!ready(el)) {
+          for (let k = 1; k <= 12; k++) {
+            const back = bmpRef.current.get(idx - k) ?? imgsRef.current[idx - k];
+            const fwd = bmpRef.current.get(idx + k) ?? imgsRef.current[idx + k];
+            if (back instanceof ImageBitmap || ready(back as HTMLImageElement)) { img = back as any; break; }
+            if (fwd instanceof ImageBitmap || ready(fwd as HTMLImageElement)) { img = fwd as any; break; }
+          }
+          if (!img) return;
+        } else img = el;
       }
+      const iw = img instanceof ImageBitmap ? img.width : img.naturalWidth;
+      const ih = img instanceof ImageBitmap ? img.height : img.naturalHeight;
       const cw = window.innerWidth, ch = window.innerHeight;
       const a = alignRef.current;
-      const s = Math.max(cw / img.naturalWidth, ch / img.naturalHeight) * a.s;
-      const w = img.naturalWidth * s, h = img.naturalHeight * s;
+      const s = Math.max(cw / iw, ch / ih) * a.s;
+      const w = iw * s, h = ih * s;
       const cx = cw / 2 + a.x, cy = ch / 2 + a.y;
       ctx.clearRect(0, 0, cw, ch);
       ctx.drawImage(img, cx - w / 2, cy - h / 2, w, h);
@@ -92,23 +103,39 @@ export function ScenePlanetSequence({
     return () => window.removeEventListener("resize", resize);
   }, [srcBase, frameCount]);
 
-  // Redraw on scroll-progress change.
+  // Redraw on scroll-progress change + maintain the decode-pinned window.
   useEffect(() => {
     const idx = Math.min(frameCount - 1, Math.max(0, Math.round(progress * (frameCount - 1))));
     currentRef.current = idx;
     drawRef.current(idx);
-    // Warm the decode cache around the playhead: after a scroll pause the browser
-    // evicts decoded bitmaps, and stacked synchronous re-decodes on resume caused
-    // the stuck-then-jump. Async decode() keeps the neighbourhood hot both ways.
-    // (?nowarm disables this for perf bisection)
-    if (!location.search.includes("nowarm")) {
-      const imgs = imgsRef.current;
-      for (let k = 1; k <= 5; k++) {
-        imgs[idx + k]?.decode?.().catch(() => {});
-        imgs[idx - k]?.decode?.().catch(() => {});
-      }
+    // Sliding bitmap window: generous ahead (scroll direction is usually down),
+    // some behind. Primed from progress 0, so the opening buffer decodes during
+    // the hero — the "loading screen" without a loading screen.
+    const lo = idx - 24, hi = idx + 48;
+    const bmps = bmpRef.current, pending = pendingRef.current;
+    for (const [k, b] of bmps) {
+      if (k < lo || k > hi) { b.close(); bmps.delete(k); }
+    }
+    for (let k = Math.max(0, lo); k <= Math.min(frameCount - 1, hi); k++) {
+      if (bmps.has(k) || pending.has(k)) continue;
+      const img = imgsRef.current[k];
+      if (!img || !img.complete || !img.naturalWidth) continue;
+      pending.add(k);
+      createImageBitmap(img).then((b) => {
+        pending.delete(k);
+        const cur = currentRef.current;
+        if (k < cur - 24 || k > cur + 48) { b.close(); return; } // window moved on
+        bmps.set(k, b);
+        if (k === cur) drawRef.current(k); // upgrade the visible frame in place
+      }).catch(() => pending.delete(k));
     }
   }, [progress, frameCount]);
+
+  // Release all pinned bitmaps on unmount.
+  useEffect(() => () => {
+    for (const [, b] of bmpRef.current) b.close();
+    bmpRef.current.clear();
+  }, []);
 
   // Redraw when alignment changes (live tuning).
   useEffect(() => {
