@@ -61,6 +61,17 @@ function cardPresence(p: number) {
   };
 }
 
+// Scroll-linked plate nudge: eases the whole render right through the creators
+// (Earth+Moon) section — the pair sits too central in the current render and
+// crowds the card. Site-side only; ramps live inside the transitions so it
+// reads as camera drift. Kill/retune when Alex re-authors the animation.
+const PAIR_NUDGE_PX = 150;
+function plateNudge(masterP: number) {
+  const in_ = stepIn(0.38, 0.44, masterP);   // ramp in through the moon's arrival
+  const out = 1 - stepIn(0.56, 0.62, masterP); // release as Mars takes over
+  return PAIR_NUDGE_PX * Math.min(in_, out);
+}
+
 // ── ?perf: temporary stall profiler ──────────────────────────────────────────
 // Watches main-thread rAF gaps, long tasks, and scroll deltas; paints a small
 // HUD so we can see WHAT blocks when scrolling resumes after a pause.
@@ -227,7 +238,7 @@ export default function HomeScenes() {
             progress={masterProg}
             srcBase={MASTER.srcBase}
             frameCount={MASTER.frameCount}
-            offsetX={align.x}
+            offsetX={align.x + plateNudge(masterProg)}
             offsetY={align.y}
             scale={align.s}
           />
