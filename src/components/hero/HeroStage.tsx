@@ -150,18 +150,6 @@ export default function HeroStage() {
         {/* WebGL beacon — the glowing flare + beam that ignite at the beacon point; dissolves as the logo resolves. */}
         <ShaderBeacon progress={progress} anchor={{ x: (beaconX + tune.dx) / size.w, y: 1 - (beaconY + tune.dy) / size.h }} />
 
-        {/* Full logo resolves in, then docks to the corner (scales about its flare point). */}
-        <motion.img
-          src="/brand/logo-main.webp" alt="Blue Horizon Interactive" draggable={false}
-          className="pointer-events-none absolute select-none"
-          style={{
-            left: mainLeft, top: mainTop, width: mainW,
-            opacity: mainOpacity, x: dockX, y: dockY, scale: mainScale,
-            transformOrigin: `${MAIN_FLARE_FX * 100}% ${MAIN_FLARE_FY * 100}%`,
-            mixBlendMode: "screen",
-          }}
-        />
-
         {/* Vignette */}
         <div
           className="pointer-events-none absolute inset-0"
@@ -175,6 +163,27 @@ export default function HeroStage() {
           <span>Scroll</span>
           <span className="h-8 w-px animate-pulse bg-gradient-to-b from-[#58d6ff] to-transparent" />
         </motion.div>
+      </div>
+
+      {/* Logo rides its OWN fixed layer (z-[8]) so it stays in front of the master
+          planet video (z-[6]) that fades up over the hero during the reveal — only
+          the logo is above the incoming video; everything else crossfades beneath it.
+          Coords are viewport-based (the stage fills the viewport), so fixed works.
+          It fades to 0 by heroP=1 as the crisp header logo takes over. */}
+      {/* screen-blend lives on the WRAPPER: the fixed layer is its own stacking
+          context, so a blend on the img would only see the (empty) wrapper and the
+          logo's black plate would stop dropping out. Blending the whole layer
+          composites it against the page below — black vanishes, logo stays. */}
+      <div className="pointer-events-none fixed inset-0 z-[8]" style={{ mixBlendMode: "screen" }}>
+        <motion.img
+          src="/brand/logo-main.webp" alt="Blue Horizon Interactive" draggable={false}
+          className="pointer-events-none absolute select-none"
+          style={{
+            left: mainLeft, top: mainTop, width: mainW,
+            opacity: mainOpacity, x: dockX, y: dockY, scale: mainScale,
+            transformOrigin: `${MAIN_FLARE_FX * 100}% ${MAIN_FLARE_FY * 100}%`,
+          }}
+        />
       </div>
       {tune.on && (
         <div className="fixed left-3 top-3 z-[100] rounded-md bg-black/85 px-3 py-2 font-mono text-xs leading-relaxed text-bh-cyan ring-1 ring-bh-cyan/30">

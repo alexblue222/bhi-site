@@ -10,7 +10,9 @@ import HomeScenes from "../components/home/HomeScenes.tsx";
 <Layout hero>
   <HeroStage client:only="react" />
   <Spine client:only="react" />
-  <main class="relative z-10 bg-[#01030a]">
+  {/* transparent so the fixed master planet layer (z-5, portaled by HomeScenes)
+      shows through behind the scene text; body carries the dark bg */}
+  <main class="relative z-10">
     <HomeScenes client:load />
   </main>
 </Layout>
