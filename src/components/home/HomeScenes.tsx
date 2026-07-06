@@ -72,17 +72,6 @@ function plateNudge(masterP: number) {
   return PAIR_NUDGE_PX * Math.min(in_, out);
 }
 
-// Head-start warp: the render's opening frames are deliberately near-still (the
-// hero handoff), which read as "stuck" once you scroll. Play the first HEAD_R of
-// the journey ~3.5x faster, easing smoothly back to 1:1 — frame 1 stays exact at
-// p=0 (anchor), and everything past HEAD_R is untouched (holds stay aligned).
-const HEAD_R = 0.05, HEAD_K = 2.5;
-function headStart(p: number) {
-  if (p <= 0 || p >= HEAD_R) return p;
-  const t = p / HEAD_R;
-  return HEAD_R * (t + HEAD_K * t * (1 - t) * (1 - t));
-}
-
 // ── ?perf: temporary stall profiler ──────────────────────────────────────────
 // Watches main-thread rAF gaps, long tasks, and scroll deltas; paints a small
 // HUD so we can see WHAT blocks when scrolling resumes after a pause.
@@ -246,7 +235,7 @@ export default function HomeScenes() {
           style={{ opacity: heroP === null ? 0 : Math.min(1, Math.max(0, (heroP - 0.74) / 0.18)) }}
         >
           <ScenePlanetSequence
-            progress={headStart(masterProg)}
+            progress={masterProg}
             srcBase={MASTER.srcBase}
             frameCount={MASTER.frameCount}
             offsetX={align.x + plateNudge(masterProg)}
