@@ -241,10 +241,12 @@ export default function HomeScenes() {
               card↔planet pairing and hold stays exactly as tuned. */}
           <ScenePlanetSequence
             progress={(() => {
-              const HEAD_F = 55 / (MASTER.frameCount * 2 - 1); // departure frames 1–55
-              const roll = heroP === null ? 0 : Math.min(1, Math.max(0, (heroP - 0.74) / 0.26));
-              const eased = 1 - (1 - roll) * (1 - roll); // moves at once, settles soft
-              return masterProg > 0 ? HEAD_F + masterProg * (1 - HEAD_F) : HEAD_F * eased;
+              // Hold frame 1 while the plate fades up under the logo (0.74–0.86),
+              // then roll frames 1–34 as the logo pulls away to the corner
+              // (0.86–1.0), smoothstepped: drifts from stillness, settles soft.
+              const HEAD_F = 34 / (MASTER.frameCount * 2 - 1);
+              const roll = heroP === null ? 0 : Math.min(1, Math.max(0, (heroP - 0.86) / 0.14));
+              return masterProg > 0 ? HEAD_F + masterProg * (1 - HEAD_F) : HEAD_F * stepIn(0, 1, roll);
             })()}
             srcBase={MASTER.srcBase}
             frameCount={MASTER.frameCount}
