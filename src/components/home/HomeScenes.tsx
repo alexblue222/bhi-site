@@ -22,17 +22,21 @@ type Scene = {
   body: string;
   cta: { href: string; label: string };
   accent: string;
+  side: "left" | "right"; // card side — always opposite the featured planet
 };
 
+// v6 five-act structure: feed=Earth · games=Earth closer · creators=Moon focus ·
+// frontier=Mars focus · connect=top-down trio. Copy is placeholder-friendly — edit away.
 const SCENES: Scene[] = [
-  { id: "feed", eyebrow: "Transmissions", title: "The Feed", body: "Every video, drop and devlog — the whole signal, in one stream.", cta: { href: "/feed", label: "Open the feed" }, accent: "#58d6ff" },
-  { id: "games", eyebrow: "In production", title: "The Games", body: "The interactive worlds we're building — and the tech that renders them.", cta: { href: "/games", label: "Explore the games" }, accent: "#58d6ff" },
-  { id: "artists", eyebrow: "The people", title: "The Creators", body: "The artists and builders behind Blue Horizon.", cta: { href: "/artists", label: "Meet the creators" }, accent: "#ffb347" },
-  { id: "connect", eyebrow: "The mission", title: "The future is not given to us. It is built.", body: "Follow along on every platform — everything we make lands here first.", cta: { href: "/contact", label: "Connect" }, accent: "#ffb347" },
+  { id: "feed", eyebrow: "Transmissions", title: "The Feed", body: "Every video, drop and devlog — the whole signal, in one stream.", cta: { href: "/feed", label: "Open the feed" }, accent: "#58d6ff", side: "left" },
+  { id: "games", eyebrow: "In production", title: "The Games", body: "The interactive worlds we're building — and the tech that renders them.", cta: { href: "/games", label: "Explore the games" }, accent: "#58d6ff", side: "right" },
+  { id: "artists", eyebrow: "The people", title: "The Creators", body: "The artists and builders behind Blue Horizon.", cta: { href: "/artists", label: "Meet the creators" }, accent: "#ffb347", side: "left" },
+  { id: "frontier", eyebrow: "Terraforming", title: "The Frontier", body: "Mars is the proving ground — the next world we're bringing to life.", cta: { href: "/games", label: "See what's next" }, accent: "#ff9e64", side: "right" },
+  { id: "connect", eyebrow: "The mission", title: "The future is not given to us. It is built.", body: "Follow along on every platform — everything we make lands here first.", cta: { href: "/contact", label: "Connect" }, accent: "#ffb347", side: "right" },
 ];
 
-// The whole 1–792 choreography at stride 2 (see bh_publish_frames.py "master").
-const MASTER = { srcBase: "/planets/master", frameCount: 396 };
+// The whole 1–1200 choreography at stride 2 (see bh_publish_frames.py "master").
+const MASTER = { srcBase: "/planets/master", frameCount: 600 };
 
 // Alignment of the master plate so frame 1 sits exactly on the hero's final Earth.
 // Tune live with ?edit (arrows = move, +/- = scale, hold Shift for big steps),
@@ -226,11 +230,10 @@ export default function HomeScenes() {
             style={{ height: `${vh}vh` }}
           >
             <div className="sticky top-0 flex h-screen items-center overflow-hidden">
-              {/* cards alternate sides to sit in the open space opposite the planet:
-                  Earth parks RIGHT for even scenes (feed, artists) and LEFT for odd
-                  (games, connect) — mirrored into the master render's camera framing */}
+              {/* each card sits in the open space opposite its featured planet —
+                  side is authored per scene, mirrored into the render's camera framing */}
               <div className="relative z-10 mx-auto w-full max-w-6xl px-6 sm:px-10">
-                <div className={i % 2 === 1 ? "max-w-md ml-auto" : "max-w-md"}>
+                <div className={s.side === "right" ? "max-w-md ml-auto" : "max-w-md"}>
                   <p className="text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: s.accent }}>{s.eyebrow}</p>
                   <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight text-slate-100 sm:text-5xl lg:text-6xl">{s.title}</h2>
                   <p className="mt-5 max-w-sm leading-relaxed text-slate-400">{s.body}</p>
