@@ -39,7 +39,60 @@ const MASTER = { srcBase: "/planets/master", frameCount: 396 };
 // or set directly via ?px= ?py= ?ps= — then bake the numbers here.
 const MASTER_ALIGN = { x: 0, y: 0, s: 1 };
 
-const DEFAULT_VH = 220; // scroll length per scene (viewport heights)
+const DEFAULT_VH = 280; // scroll length per scene (viewport heights) — longer card dwell
+
+// ── ?perf: temporary stall profiler ──────────────────────────────────────────
+// Watches main-thread rAF gaps, long tasks, and scroll deltas; paints a small
+// HUD so we can see WHAT blocks when scrolling resumes after a pause.
+function PerfHUD() {
+  const [report, setReport] = useState<string[]>([]);
+  useEffect(() => {
+    const events: string[] = [];
+    const push = (s: string) => {
+      events.unshift(`${(performance.now() / 1000).toFixed(1)}s ${s}`);
+      if (events.length > 8) events.pop();
+      setReport([...events]);
+    };
+    // 1) rAF gap monitor — any gap >50ms = main thread blocked
+    let last = performance.now(), raf = 0;
+    const loop = (t: number) => {
+      const gap = t - last;
+      if (gap > 50) push(`BLOCK ${gap.toFixed(0)}ms`);
+      last = t;
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    // 2) long task attribution
+    let po: PerformanceObserver | undefined;
+    try {
+      po = new PerformanceObserver((list) => {
+        for (const e of list.getEntries()) {
+          const attr = (e as any).attribution?.[0]?.containerType || "";
+          push(`longtask ${e.duration.toFixed(0)}ms ${attr}`);
+        }
+      });
+      // single-type + buffered registration (entryTypes form can silently no-op)
+      po.observe({ type: "longtask", buffered: true } as PerformanceObserverInit);
+    } catch { /* not supported */ }
+    // 3) scroll stick/jump detector — big position jump after idle
+    let lastY = window.scrollY, lastMove = performance.now();
+    const onScroll = () => {
+      const y = window.scrollY, now = performance.now();
+      const dy = Math.abs(y - lastY), idle = now - lastMove;
+      if (dy > 120 && idle > 120) push(`JUMP ${dy.toFixed(0)}px after ${idle.toFixed(0)}ms idle`);
+      lastY = y; lastMove = now;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { cancelAnimationFrame(raf); po?.disconnect(); window.removeEventListener("scroll", onScroll); };
+  }, []);
+  return (
+    <div className="fixed left-3 top-20 z-[200] w-80 rounded-md bg-black/90 p-3 font-mono text-[11px] leading-relaxed text-emerald-300 ring-1 ring-emerald-400/40">
+      <div className="text-white">PERF · scroll-stall profiler</div>
+      {report.length === 0 ? <div className="text-slate-400">clean so far — reproduce the stall…</div>
+        : report.map((r, i) => <div key={i}>{r}</div>)}
+    </div>
+  );
+}
 
 export default function HomeScenes() {
   const [vh, setVh] = useState(DEFAULT_VH);
@@ -47,6 +100,7 @@ export default function HomeScenes() {
   const [masterProg, setMasterProg] = useState(0);
   const [align, setAlign] = useState(MASTER_ALIGN);
   const [edit, setEdit] = useState(false); // set client-side to avoid hydration mismatch
+  const [perf, setPerf] = useState(false); // ?perf stall profiler
   const [mounted, setMounted] = useState(false); // portal target only exists client-side
   const [heroP, setHeroP] = useState<number | null>(null); // hero scroll progress (broadcast by HeroStage)
   const refs = useRef<(HTMLElement | null)[]>([]);
@@ -65,6 +119,7 @@ export default function HomeScenes() {
     setMounted(true);
     const q = new URLSearchParams(location.search);
     setEdit(q.has("edit"));
+    setPerf(q.has("perf"));
     const v = parseFloat(q.get("vh") || "");
     if (v > 40) setVh(v);
     const px = parseFloat(q.get("px") || ""), py = parseFloat(q.get("py") || ""), ps = parseFloat(q.get("ps") || "");
@@ -142,7 +197,7 @@ export default function HomeScenes() {
           makes it a true crossfade (the canvas screen-blends against IT, not the hero).
           Only the hero logo (z-[8]) and header (z-50) sit above it; section text is z-10
           inside main, which paints later in the tree, so it stays readable on top. */}
-      {mounted && createPortal(
+      {mounted && !location.search.includes("noseq") && createPortal(
         <div
           className="pointer-events-none fixed inset-0 z-[6] bg-[#01030a]"
           // null = hero hasn't reported yet (mount race) — stay hidden, no flash over the hero
@@ -192,6 +247,8 @@ export default function HomeScenes() {
           </section>
         ))}
       </div>
+
+      {perf && <PerfHUD />}
 
       {edit && (
         <div className="fixed bottom-3 right-3 z-[100] rounded-md bg-black/85 px-3 py-2 font-mono text-[11px] leading-relaxed text-bh-cyan ring-1 ring-bh-cyan/30">

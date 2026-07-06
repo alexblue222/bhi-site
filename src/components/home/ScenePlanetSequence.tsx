@@ -35,9 +35,19 @@ export function ScenePlanetSequence({
     const canvas = canvasRef.current!;
     const ctx = canvas.getContext("2d")!;
 
+    const ready = (im?: HTMLImageElement) => !!im && im.complete && im.naturalWidth > 0;
     const draw = (idx: number) => {
-      const img = imgsRef.current[idx];
-      if (!img || !img.complete || !img.naturalWidth) return;
+      let img = imgsRef.current[idx];
+      if (!ready(img)) {
+        // Nearest loaded neighbour instead of freezing on a stale frame while
+        // the sequence is still streaming in.
+        for (let k = 1; k <= 12; k++) {
+          const back = imgsRef.current[idx - k], fwd = imgsRef.current[idx + k];
+          if (ready(back)) { img = back; break; }
+          if (ready(fwd)) { img = fwd; break; }
+        }
+        if (!ready(img)) return;
+      }
       const cw = window.innerWidth, ch = window.innerHeight;
       const a = alignRef.current;
       const s = Math.max(cw / img.naturalWidth, ch / img.naturalHeight) * a.s;
@@ -87,6 +97,17 @@ export function ScenePlanetSequence({
     const idx = Math.min(frameCount - 1, Math.max(0, Math.round(progress * (frameCount - 1))));
     currentRef.current = idx;
     drawRef.current(idx);
+    // Warm the decode cache around the playhead: after a scroll pause the browser
+    // evicts decoded bitmaps, and stacked synchronous re-decodes on resume caused
+    // the stuck-then-jump. Async decode() keeps the neighbourhood hot both ways.
+    // (?nowarm disables this for perf bisection)
+    if (!location.search.includes("nowarm")) {
+      const imgs = imgsRef.current;
+      for (let k = 1; k <= 5; k++) {
+        imgs[idx + k]?.decode?.().catch(() => {});
+        imgs[idx - k]?.decode?.().catch(() => {});
+      }
+    }
   }, [progress, frameCount]);
 
   // Redraw when alignment changes (live tuning).

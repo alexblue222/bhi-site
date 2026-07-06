@@ -11,6 +11,7 @@ let lenis: Lenis | undefined;
 
 export function initSmoothScroll(): Lenis | undefined {
   if (typeof window === "undefined" || lenis) return lenis;
+  if (location.search.includes("nosmooth")) return; // perf bisection: native scroll
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     // Reduced motion: native scroll, but still fix trigger positions after fonts.
     document.fonts?.ready.then(() => ScrollTrigger.refresh());
@@ -18,8 +19,9 @@ export function initSmoothScroll(): Lenis | undefined {
   }
 
   lenis = new Lenis({
-    lerp: 0.1,            // 0 = instant, 1 = no smoothing; 0.1 = calm inertial glide
-    wheelMultiplier: 0.9, // slightly tame fast wheel flicks
+    lerp: 0.16,           // snappier pickup from rest (0.1 left a ~250ms dead zone
+                          // when resuming scroll after a pause) while keeping glide
+    wheelMultiplier: 1.0, // full wheel response — pairs with the higher lerp
     smoothWheel: true,
   });
 
