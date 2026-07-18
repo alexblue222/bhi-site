@@ -52,17 +52,27 @@ Image drop zone: put files in `public/uploads/…` (the CMS media folder) and re
 async submit, pick an email/forms provider and set `PUBLIC_CONTACT_ENDPOINT` (env), or add a
 `/contact` POST route to the hub Worker. *Decision needed: which provider.*
 
-**8. Live feed (YouTube)** — the hub Worker's YouTube integration is written but returns empty
-until `YOUTUBE_API_KEY` + `YOUTUBE_CHANNEL_ID` are set (Worker secrets/vars). Flip-a-switch.
-Patreon / Instagram / TikTok fetchers are *not built yet* — separate work.
+**8. Live feed** — ✅ **YouTube is LIVE** (key + channel id set, Worker deployed, `/feed` pulls real
+uploads). **Patreon + Instagram fetchers are now BUILT** but inert until their creds are set — follow
+`hub-worker/API-SETUP.md` (Patreon: register a client → 3 secrets; Instagram: Business/Creator account
++ Meta app → 1 token). TikTok still deferred.
 
 **9. CMS activation** — Sveltia CMS + Worker OAuth proxy exist but return 503 until the private
 repo + fine-grained PAT + two Cloudflare Access apps + Worker secrets are set (see
 `hub-worker/README.md`). Do this and you (and the team) can edit all the above through `/admin`.
 
-**10. Marketplace (only when the store goes live)** — products are placeholder and hidden from nav.
-Needs: Lemon Squeezy store + checkout, license/download delivery, and a small `image` field added
-to the product/gallery type (currently gradient-only). Not started — this is the P4 roadmap item.
+**10. Marketplace** — now in the nav, with **three real product stubs** in `src/lib/data.ts` (all
+`status: "coming-soon"`), one per category:
+- **Blue Horizon — Blender Plugin** (Blender Plugins)
+- **Blue Horizon — Blender Analyser** (Tools & Scripts)
+- **Sci-fi Door Pack** (3D Assets — from the unfinished doors)
+
+Each needs from you: real **name + tagline + description + features**, **pricing / licence tiers**,
+**compatibility**, and **gallery art** (screenshots/renders — a small `image` field still needs adding
+to the gallery type; currently gradient placeholders). The **version + changelog** fields are already
+there — that's the "update history" buyers see; the actual updated file is delivered by the store
+platform (**Lemon Squeezy** direct, or Gumroad) when you upload a new version. To go live per product:
+fill the fields → add art → set `status: "available"` → wire the Lemon Squeezy checkout.
 
 ---
 

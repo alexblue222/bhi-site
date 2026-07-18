@@ -7,7 +7,7 @@ import { EmptyState } from "../ui/States";
 import { ProductCard } from "../cards/ProductCard";
 import { PRODUCTS, formatPrice, type ProductCategory } from "../../lib/data";
 
-const CATEGORIES: ProductCategory[] = ["Blender plugins", "3D assets", "Shaders & materials", "Tools & presets"];
+const CATEGORIES: ProductCategory[] = ["Blender Plugins", "Tools & Scripts", "3D Assets"];
 
 type Sort = "newest" | "price-asc" | "price-desc";
 
