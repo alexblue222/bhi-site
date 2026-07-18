@@ -201,22 +201,43 @@ export const PRODUCTS: Product[] = [
     status: "available",
   },
   {
-    slug: "bhi-blender-analyser",
-    title: "Blue Horizon — Blender Analyser", // TODO: real name
-    tagline: "TODO: what the analyser inspects / reports on.",
+    slug: "mesh-inspector",
+    title: "Mesh Inspector",
+    tagline: "Drag in FBX, .blend, OBJ or GLB and get a clean report on every mesh.",
     category: "Tools & Scripts",
-    price: 0, // TODO
-    thumbTint: "from-[#062036] to-[#0e7bd0]",
-    gallery: [{ tint: "from-[#062036] to-[#0e7bd0]", label: "TODO — analyser screenshot" }],
-    description: ["TODO: the problem it solves and what it outputs."],
-    features: ["TODO: key feature", "TODO: key feature"],
-    compatibility: "Blender 4.2+", // TODO
-    version: "0.1.0",
-    changelog: [{ version: "0.1.0", date: "2026-07-18", notes: "Placeholder listing created." }],
-    licenseTiers: [{ name: "TODO tier", price: 0 }],
-    buyMode: "direct",
+    price: 0, // free
+    thumbTint: "from-[#1a1a2e] to-[#3a2f7d]",
+    gallery: [
+      { tint: "from-[#161a2e] to-[#3a2f7d]", label: "Analyse a whole folder — a thumbnail + report per file", image: "/products/mesh-inspector/01-list.png" },
+      { tint: "from-[#161a2e] to-[#2a3f7d]", label: "Expand any file for a full per-object breakdown", image: "/products/mesh-inspector/02-objects.png" },
+      { tint: "from-[#062036] to-[#0e7bd0]", label: "Verts, tris, materials, manifold, rig & bounds", image: "/products/mesh-inspector/03-detail.png" },
+    ],
+    description: [
+      "Know what a mesh file actually is — before you open it. Mesh Inspector is a drag-and-drop desktop app that reads FBX, .blend, OBJ and GLB files and gives you a clean report on each: object count, verts and tris, materials, manifold status, bounding size, and whether it's rigged or has shape keys — with a rendered thumbnail so you can see it at a glance.",
+      "Built for bulk. Drop a whole folder of unknown or badly-named files and get a row for every one, each expandable to a full per-object breakdown, and export the lot to CSV. It's the fastest way to identify, sort and tidy a messy library of 3D files.",
+      "Every common format. FBX, .blend, OBJ and GLB / glTF. For .blend and FBX it drives Blender under the hood, so the stats are real geometry — not guesses. (Optional: get an AI-suggested name for mystery files.)",
+      "Needs Blender installed. Mesh Inspector uses your Blender to open .blend / FBX files — it finds Blender automatically, or you point it at blender.exe once. Windows app, free.",
+      "A work in progress. This is an early release and still being tidied up — if you hit a bug, send it in and I'll get it fixed. (Comments + a report-a-problem spot are coming to this page.)",
+    ],
+    features: [
+      "Reads FBX · .blend · OBJ · GLB / glTF",
+      "Per-file report + rendered thumbnail",
+      "Per-object stats: verts, tris, materials, manifold, rig, shape keys",
+      "Bulk drag-and-drop — a whole folder at once",
+      "Export everything to CSV",
+      "Optional AI name suggestions for unnamed files",
+    ],
+    compatibility: "Windows · requires Blender installed",
+    version: "1.0.0",
+    changelog: [
+      { version: "1.0.0", date: "2026-07-19", notes: "First public release — bulk analysis, per-object stats, thumbnails, CSV export." },
+    ],
+    licenseTiers: [{ name: "Free", price: 0, note: "Windows · Blender required" }],
+    buyMode: "external",
+    externalUrl: "https://bluehorizon.gumroad.com", // TODO: point at the exact Gumroad product URL once uploaded
+    externalLabel: "Get it free (Windows)",
     maker: "alex-sheridan",
-    status: "coming-soon",
+    status: "available",
   },
   {
     slug: "bhi-door-pack",
