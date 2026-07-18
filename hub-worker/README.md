@@ -13,7 +13,7 @@ Public Cloudflare Worker on `hub.bluehorizoninteractive.com`. Two jobs:
 
 | Route | Method | Behaviour |
 |---|---|---|
-| `/feed` | GET | `{items: FeedItem[]}` from YouTube uploads (max 25). Returns `{items:[]}` until `YOUTUBE_API_KEY` + `YOUTUBE_CHANNEL_ID` are set. Upstream calls cached 600 s; response `Cache-Control: max-age=600`. |
+| `/feed` | GET | `{items: FeedItem[]}` merged from **YouTube + Instagram + Patreon**, newest first. Each source is independent — returns nothing until its creds are set, and a failing source degrades to empty. Upstream calls cached 600 s; response `Cache-Control: max-age=600`. **Setup: see [API-SETUP.md](./API-SETUP.md).** |
 | `/auth` | GET | Decap/Sveltia OAuth popup completion page. `503 {"error":"CMS not activated"}` until `GITHUB_PAT` + `ACCESS_TEAM_DOMAIN` + `ACCESS_AUD` are all set. The token it hands the CMS is a dummy — real auth is Cloudflare Access in front of this route. |
 | `/github/*` | any | Proxy to `api.github.com` with the server-side PAT. Requires a **valid `Cf-Access-Jwt-Assertion`** (RS256 signature verified against the team's Access certs, `aud` + `exp` checked). Allowlist: `/repos/alexblue222/bhi-site*`, `GET /user`, `POST /graphql`. Everything else → 403. |
 | anything else | — | `404 {"error":"not found"}` |
@@ -28,8 +28,15 @@ and `http://localhost:4321` (with credentials, for the Access cookie).
 | `GITHUB_PAT` | secret | `npx wrangler secret put GITHUB_PAT` |
 | `YOUTUBE_API_KEY` | secret | `npx wrangler secret put YOUTUBE_API_KEY` |
 | `YOUTUBE_CHANNEL_ID` | var | `vars` block in `wrangler.jsonc` (or dashboard) |
+| `INSTAGRAM_TOKEN` | secret | `npx wrangler secret put INSTAGRAM_TOKEN` (long-lived, cron-refreshed) |
+| `PATREON_CLIENT_ID` / `PATREON_CLIENT_SECRET` / `PATREON_REFRESH_TOKEN` | secret | `npx wrangler secret put …` |
+| `PATREON_CAMPAIGN_ID` | var | optional (auto-discovered) |
+| `HUB_KV` | KV binding | `npx wrangler kv namespace create HUB_KV` → id in `wrangler.jsonc` |
 | `ACCESS_TEAM_DOMAIN` | var | e.g. `myteam.cloudflareaccess.com` |
 | `ACCESS_AUD` | var | the Access application's AUD tag |
+
+The feed platforms (YouTube / Instagram / Patreon) have their own click-by-click guide in
+**[API-SETUP.md](./API-SETUP.md)** — start there.
 
 `GITHUB_PAT`: fine-grained PAT scoped to **only `alexblue222/bhi-site`** —
 Contents: read/write, Metadata: read (add Pull requests: read/write if Sveltia's
@@ -68,6 +75,13 @@ Verify: `curl https://bhi-hub.<account>.workers.dev/feed` → `{"items":[]}`,
 `/auth` → 503 until activated. Same on `https://hub.bluehorizoninteractive.com`
 once the custom domain provisions.
 
-## Deferred
+## Feed platforms — built, awaiting creds
 
-- Patreon / Instagram pulls — add as new paths on this worker when they land (BUILD-SPEC "placeholder slots").
+YouTube · Instagram · Patreon fetchers are all implemented in `src/index.js` (normalised to
+`FeedItem`, merged newest-first, token refresh via the daily cron). They're inert until each
+platform's creds are set — follow **[API-SETUP.md](./API-SETUP.md)**. TikTok is still deferred.
+
+## Later
+
+- Per-platform card styling on `/feed` (YouTube long-vs-Short, Instagram, Patreon).
+- YouTube→Patreon auto-cross-post (Alex's "part two").

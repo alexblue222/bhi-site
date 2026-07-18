@@ -6,10 +6,29 @@
   "routes": [
     { "pattern": "hub.bluehorizoninteractive.com", "custom_domain": true }
   ]
-  // Plain vars (secrets go via `wrangler secret put`). Uncomment + fill to activate:
+
+  // ── Activate the live feed + CMS (see API-SETUP.md). Uncomment + fill each block. ──
+
+  // Plain vars (non-secret). Secrets go via `wrangler secret put <NAME>` — never here.
   // "vars": {
-  //   "YOUTUBE_CHANNEL_ID": "UC...",
+  //   "YOUTUBE_CHANNEL_ID": "UC...",              // your channel id
+  //   "PATREON_CAMPAIGN_ID": "",                   // optional; auto-discovered if blank
   //   "ACCESS_TEAM_DOMAIN": "<team>.cloudflareaccess.com",
   //   "ACCESS_AUD": "<access-app-aud-tag>"
-  // }
+  // },
+
+  // KV — persists the rotating Patreon/Instagram OAuth tokens across requests.
+  // Create it: `npx wrangler kv namespace create HUB_KV` → paste the id below.
+  // "kv_namespaces": [
+  //   { "binding": "HUB_KV", "id": "<kv-namespace-id>" }
+  // ],
+
+  // Daily cron — refreshes the expiring Instagram (60d) / Patreon (~31d) tokens.
+  // "triggers": { "crons": ["0 3 * * *"] }
+
+  // Secrets to set (`npx wrangler secret put <NAME>`):
+  //   YOUTUBE_API_KEY
+  //   INSTAGRAM_TOKEN            (long-lived, 60d — the cron keeps it fresh after)
+  //   PATREON_CLIENT_ID  PATREON_CLIENT_SECRET  PATREON_REFRESH_TOKEN
+  //   GITHUB_PAT                 (CMS only)
 }

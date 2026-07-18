@@ -7,6 +7,8 @@
 
 const REPO_PREFIX = "/repos/alexblue222/bhi-site";
 const YT_TINT = "from-[#0a2a6b] to-[#1a9fff]"; // matches blog default tint in src/lib/content.ts
+const IG_TINT = "from-[#3a1560] to-[#c13584]";      // instagram — magenta/purple
+const PATREON_TINT = "from-[#3a1208] to-[#ff6b4a]"; // patreon — warm coral
 
 export default {
   async fetch(request, env, ctx) {
@@ -39,6 +41,13 @@ export default {
     }
 
     return json({ error: "not found" }, 404, cors(origin));
+  },
+
+  // Daily cron (wrangler triggers.crons) — proactively refresh the OAuth tokens that
+  // expire (Instagram long-lived 60d, Patreon ~31d) and persist them to KV, so /feed
+  // never serves a stale token. No-op for platforms whose creds aren't set.
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(refreshTokens(env));
   },
 };
 
@@ -74,10 +83,37 @@ function json(data, status = 200, extra = {}) {
   });
 }
 
-// ─── /feed — YouTube → FeedItem[] ─────────────────────────────────────────────
+// ─── /feed — YouTube + Instagram + Patreon → FeedItem[], newest first ─────────
+// Each source returns [] when its creds aren't set, so the feed lights up one
+// platform at a time as Alex adds keys. Sources run in parallel; a failing source
+// degrades to [] rather than breaking the whole feed.
 
 async function handleFeed(env, ctx) {
-  if (!env.YOUTUBE_API_KEY || !env.YOUTUBE_CHANNEL_ID) return { items: [] };
+  const sources = await Promise.all([
+    safe(() => fetchYouTube(env, ctx)),
+    safe(() => fetchInstagram(env, ctx)),
+    safe(() => fetchPatreon(env, ctx)),
+  ]);
+  const items = sources
+    .flat()
+    .filter(Boolean)
+    .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt)); // by release date
+  return { items };
+}
+
+/** Never let one source's throw take down the feed. */
+async function safe(fn) {
+  try {
+    return (await fn()) || [];
+  } catch {
+    return [];
+  }
+}
+
+// ─── YouTube — API key + channel id (no OAuth) ───────────────────────────────
+
+async function fetchYouTube(env, ctx) {
+  if (!env.YOUTUBE_API_KEY || !env.YOUTUBE_CHANNEL_ID) return [];
 
   const channel = await cachedJson(
     `https://cache.bhi-hub/yt-channel/${env.YOUTUBE_CHANNEL_ID}`,
@@ -85,7 +121,7 @@ async function handleFeed(env, ctx) {
     ctx,
   );
   const uploads = channel?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
-  if (!uploads) return { items: [] };
+  if (!uploads) return [];
 
   const list = await cachedJson(
     `https://cache.bhi-hub/yt-playlist/${uploads}`,
@@ -93,11 +129,14 @@ async function handleFeed(env, ctx) {
     ctx,
   );
 
-  const items = (list?.items || [])
+  return (list?.items || [])
     .map((it) => {
       const s = it.snippet;
       const videoId = s?.resourceId?.videoId;
       if (!videoId || s.title === "Private video" || s.title === "Deleted video") return null;
+      // Long-form vs Short: the playlist snippet can't tell them apart (needs a
+      // videos.list duration lookup — extra quota). TODO(feed): flag Shorts by
+      // duration ≤ 3min so the card can render vertical. For now all read as video.
       return {
         id: `yt-${videoId}`,
         type: "video",
@@ -116,17 +155,160 @@ async function handleFeed(env, ctx) {
       };
     })
     .filter(Boolean);
-
-  return { items };
 }
 
-/** Fetch JSON with caches.default (synthetic cache key — never contains the API key). */
-async function cachedJson(cacheKeyUrl, fetchUrl, ctx, ttl = 600) {
+// ─── Instagram — "Instagram API with Instagram Login" (Business/Creator acct) ─
+// Long-lived token (60d) in KV (seeded from the INSTAGRAM_TOKEN secret); the cron
+// refreshes it. graph.instagram.com/me/media → IMAGE | VIDEO | CAROUSEL_ALBUM.
+
+async function fetchInstagram(env, ctx) {
+  const token = (await kvGet(env, "ig_token")) || env.INSTAGRAM_TOKEN;
+  if (!token) return [];
+
+  const fields = "id,caption,media_type,media_url,permalink,thumbnail_url,timestamp";
+  const data = await cachedJson(
+    "https://cache.bhi-hub/ig-media",
+    `https://graph.instagram.com/me/media?fields=${fields}&limit=25&access_token=${token}`,
+    ctx,
+  );
+
+  return (data?.data || []).map((m) => {
+    const isVideo = m.media_type === "VIDEO"; // Reels arrive as VIDEO
+    return {
+      id: `ig-${m.id}`,
+      type: "social",
+      platform: "instagram",
+      title: firstLine(m.caption) || "Instagram post",
+      excerpt: m.caption ? truncate(m.caption) : undefined,
+      sourceUrl: m.permalink,
+      publishedAt: m.timestamp,
+      source: "auto",
+      media: {
+        tint: IG_TINT,
+        thumbUrl: m.thumbnail_url || m.media_url, // videos expose a poster via thumbnail_url
+        aspect: isVideo ? "video" : "square",
+      },
+    };
+  });
+}
+
+// ─── Patreon — API v2, creator token (refresh-token grant → access token) ────
+
+async function fetchPatreon(env, ctx) {
+  const token = await patreonAccessToken(env);
+  if (!token) return [];
+  const auth = { Authorization: `Bearer ${token}` };
+
+  let campaignId = env.PATREON_CAMPAIGN_ID;
+  if (!campaignId) {
+    const camps = await cachedJson(
+      "https://cache.bhi-hub/patreon-campaigns",
+      "https://www.patreon.com/api/oauth2/v2/campaigns",
+      ctx,
+      3600,
+      auth,
+    );
+    campaignId = camps?.data?.[0]?.id;
+  }
+  if (!campaignId) return [];
+
+  // v2 requires every attribute be explicitly requested via fields[post].
+  const q = "fields%5Bpost%5D=title,url,published_at,is_public,is_paid&sort=-published_at";
+  const posts = await cachedJson(
+    `https://cache.bhi-hub/patreon-posts/${campaignId}`,
+    `https://www.patreon.com/api/oauth2/v2/campaigns/${campaignId}/posts?${q}`,
+    ctx,
+    600,
+    auth,
+  );
+
+  return (posts?.data || [])
+    .filter((p) => p.attributes?.published_at)
+    .map((p) => {
+      const a = p.attributes;
+      return {
+        id: `patreon-${p.id}`,
+        type: "patreon",
+        platform: "patreon",
+        title: a.title || "Patreon post",
+        sourceUrl: a.url,
+        publishedAt: a.published_at,
+        source: "auto",
+        memberOnly: a.is_public === false,
+        media: { tint: PATREON_TINT, aspect: "video" },
+      };
+    });
+}
+
+// ─── OAuth token store (KV-backed, seeded from secrets) ──────────────────────
+// KV persists rotating tokens so a refresh survives across requests/deploys. If no
+// HUB_KV is bound the fetchers still work off the seed secrets (Patreon just re-mints
+// an access token each cold start — fine, but bind KV in production).
+
+async function kvGet(env, key) {
+  try { return env.HUB_KV ? await env.HUB_KV.get(key) : null; } catch { return null; }
+}
+async function kvPut(env, key, val, ttl) {
+  try { if (env.HUB_KV) await env.HUB_KV.put(key, val, ttl ? { expirationTtl: ttl } : undefined); } catch { /* ignore */ }
+}
+
+/** Patreon access token via the refresh-token grant, cached in KV for its lifetime. */
+async function patreonAccessToken(env) {
+  if (!env.PATREON_CLIENT_ID || !env.PATREON_CLIENT_SECRET) return null;
+  const cached = await kvGet(env, "patreon_access");
+  if (cached) return cached;
+
+  const refresh = (await kvGet(env, "patreon_refresh")) || env.PATREON_REFRESH_TOKEN;
+  if (!refresh) return null;
+
+  const res = await fetch("https://www.patreon.com/api/oauth2/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: refresh,
+      client_id: env.PATREON_CLIENT_ID,
+      client_secret: env.PATREON_CLIENT_SECRET,
+    }),
+  });
+  if (!res.ok) return null;
+  const tok = await res.json();
+  if (!tok.access_token) return null;
+
+  // Cache the access token just under its lifetime; persist the (possibly rotated) refresh token.
+  const ttl = Math.max(60, (tok.expires_in || 2678400) - 3600);
+  await kvPut(env, "patreon_access", tok.access_token, ttl);
+  if (tok.refresh_token) await kvPut(env, "patreon_refresh", tok.refresh_token);
+  return tok.access_token;
+}
+
+// ─── Cron: refresh the expiring tokens ───────────────────────────────────────
+
+async function refreshTokens(env) {
+  // Instagram: extend the long-lived token (valid 60d; refreshable after 24h). Persist to KV.
+  const igSeed = (await kvGet(env, "ig_token")) || env.INSTAGRAM_TOKEN;
+  if (igSeed) {
+    try {
+      const r = await fetch(
+        `https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=${igSeed}`,
+      );
+      if (r.ok) {
+        const t = await r.json();
+        if (t.access_token) await kvPut(env, "ig_token", t.access_token);
+      }
+    } catch { /* ignore */ }
+  }
+  // Patreon: drop the cached access token so the next /feed re-mints (and re-rotates) it.
+  await kvPut(env, "patreon_access", "", 1);
+}
+
+/** Fetch JSON via caches.default (synthetic key — never contains a token). Optional auth headers. */
+async function cachedJson(cacheKeyUrl, fetchUrl, ctx, ttl = 600, headers = undefined) {
   const cache = caches.default;
   const key = new Request(cacheKeyUrl);
   let res = await cache.match(key);
   if (!res) {
-    const upstream = await fetch(fetchUrl);
+    const upstream = await fetch(fetchUrl, headers ? { headers } : undefined);
     if (!upstream.ok) return null;
     const body = await upstream.text();
     res = new Response(body, {
@@ -138,6 +320,13 @@ async function cachedJson(cacheKeyUrl, fetchUrl, ctx, ttl = 600) {
     ctx.waitUntil(cache.put(key, res.clone()));
   }
   return res.json();
+}
+
+function firstLine(s, n = 80) {
+  if (!s) return undefined;
+  const line = s.split("\n")[0].trim();
+  if (!line) return undefined;
+  return line.length <= n ? line : line.slice(0, n).replace(/\s+\S*$/, "") + "…";
 }
 
 function bestThumb(t = {}) {
