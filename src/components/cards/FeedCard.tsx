@@ -1,10 +1,9 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Play, X, Lock, ExternalLink, ArrowRight, Eye, Heart, PartyPopper, Pin } from "lucide-react";
 import { GlassCard } from "../ui/GlassCard";
 import { PlatformBadge } from "../ui/PlatformBadge";
 import { MediaTile } from "../ui/MediaTile";
 import { getArtist, relTime, PLATFORM_META, type FeedItem } from "../../lib/data";
-import { gsap, ScrollTrigger, prefersReducedMotion } from "../../lib/gsapSetup";
 
 // The centerpiece card family — ONE glass card, six variants (video / post / patreon /
 // release / social / milestone), sized for the single centered feed column. Video cards
@@ -109,74 +108,94 @@ function ThumbLayers({ media, broken, onBroken }: {
   );
 }
 
-function PlayGlyph() {
+function PlayGlyph({ sm = false }: { sm?: boolean }) {
   return (
-    <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/30 bg-black/40 backdrop-blur-sm transition-transform duration-300 group-hover:scale-110">
-      <Play className="ml-0.5 h-5 w-5 text-white" fill="currentColor" aria-hidden />
+    <span
+      className={`flex items-center justify-center rounded-full border border-white/30 bg-black/40 backdrop-blur-sm transition-transform duration-300 group-hover:scale-110 ${sm ? "h-11 w-11" : "h-14 w-14"}`}
+    >
+      <Play className={`ml-0.5 text-white ${sm ? "h-4 w-4" : "h-5 w-5"}`} fill="currentColor" aria-hidden />
     </span>
   );
 }
 
-function ExpandingPlayer({ item }: { item: FeedItem }) {
-  const media = item.media!;
-  const frame = useRef<HTMLDivElement>(null);
-  const thumb = useRef<HTMLDivElement>(null);
+// ─── Video: horizontal card — thumbnail LEFT, title + description RIGHT ────────
+// Resting = thumb-left row. Clicking the thumbnail swaps the card to a full-width
+// inline 16:9 player (lazy iframe — never loaded before click), with the title +
+// description below it. Non-embeddable items (no embedUrl) link straight out.
+
+/** The left thumbnail: fixed-width 16:9 poster with the play glyph. A <button> when
+ *  it plays inline, a plain <div> when the whole card is already a link. */
+function VideoThumb({ item, broken, onBroken, onPlay }: {
+  item: FeedItem;
+  broken: boolean;
+  onBroken: () => void;
+  onPlay?: () => void;
+}) {
+  const cls = "relative aspect-video w-36 shrink-0 overflow-hidden rounded-xl bg-bh-ink sm:w-52 md:w-60";
+  const inner = (
+    <>
+      <ThumbLayers media={item.media!} broken={broken} onBroken={onBroken} />
+      <span className="absolute inset-0 flex items-center justify-center"><PlayGlyph sm /></span>
+    </>
+  );
+  return onPlay ? (
+    <button type="button" onClick={onPlay} aria-label={`Play — ${item.title}`} className={cls}>{inner}</button>
+  ) : (
+    <div className={cls}>{inner}</div>
+  );
+}
+
+function VideoCard({ item }: { item: FeedItem }) {
+  const media = item.media;
+  const expandable = !!media?.embedUrl;
   const [open, setOpen] = useState(false);
   const [broken, setBroken] = useState(false);
 
-  const embedSrc = `${media.embedUrl}${media.embedUrl!.includes("?") ? "&" : "?"}autoplay=1&rel=0`;
+  // Watch affordance: a real out-link when the card itself is NOT a link (embeddable
+  // → GlassCard is a <div>), a plain label when the whole card already links out
+  // (avoids an illegal nested <a>).
+  const watch = expandable ? (
+    item.sourceUrl ? (
+      <a
+        href={item.sourceUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => e.stopPropagation()}
+        className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 transition-colors hover:text-bh-cyan"
+      >
+        Watch on YouTube <ExternalLink className="h-3 w-3" aria-hidden />
+      </a>
+    ) : <span />
+  ) : (
+    <span className="inline-flex items-center gap-1 text-xs font-medium text-bh-cyan">
+      Watch <ExternalLink className="h-3 w-3" aria-hidden />
+    </span>
+  );
 
-  const toggle = () => {
-    const el = frame.current;
-    if (!el) return;
-    const opening = !open;
-    setOpen(opening); // closing unmounts the iframe immediately → playback stops
-
-    if (prefersReducedMotion()) {
-      if (thumb.current) gsap.set(thumb.current, { autoAlpha: opening ? 0 : 1 });
-      return; // the aspect-class flip resizes the frame instantly
-    }
-    // Height tween between the 21:9 poster crop and the 16:9 player; the inline
-    // height is cleared on complete so the CSS aspect class owns it again (resize-safe).
-    // This is a layout tween (not transform/opacity) — it reflows every card below,
-    // so any not-yet-revealed ScrollTrigger further down the feed now has a stale
-    // start position. Refresh once the reflow settles.
-    const target = el.clientWidth * (opening ? 9 / 16 : 9 / 21);
-    gsap.fromTo(
-      el,
-      { height: el.offsetHeight },
-      {
-        height: target,
-        duration: 0.55,
-        ease: "power3.inOut",
-        onComplete: () => {
-          gsap.set(el, { clearProps: "height" });
-          ScrollTrigger.refresh();
-        },
-      },
-    );
-    if (thumb.current) gsap.to(thumb.current, { autoAlpha: opening ? 0 : 1, duration: 0.45, ease: "power2.out" });
-  };
-
-  return (
-    <div
-      ref={frame}
-      className={`relative overflow-hidden bg-bh-ink ${open ? "aspect-video" : "aspect-[21/9]"}`}
-    >
-      <div ref={thumb} className="absolute inset-0">
-        <ThumbLayers media={media} broken={broken} onBroken={() => setBroken(true)} />
-        <button
-          type="button"
-          onClick={toggle}
-          aria-expanded={open}
-          aria-label={`Play — ${item.title}`}
-          className="absolute inset-0 flex items-center justify-center"
-        >
-          <PlayGlyph />
-        </button>
+  // The right-hand text column — title over description, shared by both layouts.
+  const text = (
+    <div className="min-w-0 flex-1">
+      <CardHeader item={item} />
+      <h3 className="mt-2 line-clamp-2 font-display text-lg font-semibold leading-snug text-slate-100 sm:text-xl">{item.title}</h3>
+      {item.excerpt && <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-slate-400 sm:line-clamp-3">{item.excerpt}</p>}
+      <div className="mt-4 flex items-center justify-between">
+        {item.engagement?.views ? (
+          <span className="inline-flex items-center gap-1.5 text-xs text-slate-500">
+            <Eye className="h-3.5 w-3.5" aria-hidden />{item.engagement.views}
+          </span>
+        ) : <span />}
+        {watch}
       </div>
-      {open && (
-        <>
+    </div>
+  );
+
+  // Expanded: full-width inline player, text below. (ponytail: instant swap, no height
+  // tween — one fewer moving part; the reveal-on-scroll entrance still applies once.)
+  if (expandable && open) {
+    const embedSrc = `${media!.embedUrl}${media!.embedUrl!.includes("?") ? "&" : "?"}autoplay=1&rel=0`;
+    return (
+      <GlassCard>
+        <div className="relative aspect-video overflow-hidden bg-bh-ink">
           <iframe
             src={embedSrc}
             title={item.title}
@@ -187,72 +206,33 @@ function ExpandingPlayer({ item }: { item: FeedItem }) {
           />
           <button
             type="button"
-            onClick={toggle}
+            onClick={() => setOpen(false)}
             aria-label="Close player"
             className="absolute right-2.5 top-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white backdrop-blur-sm transition-colors hover:bg-black/85"
           >
             <X className="h-4 w-4" aria-hidden />
           </button>
-        </>
-      )}
-    </div>
-  );
-}
-
-function VideoCard({ item }: { item: FeedItem }) {
-  const media = item.media;
-  const expandable = !!media?.embedUrl;
-  const [broken, setBroken] = useState(false);
-
-  const content = (
-    <div className="p-6 sm:p-7">
-      <CardHeader item={item} />
-      <h3 className="mt-4 font-display text-xl font-semibold text-slate-100 sm:text-2xl">{item.title}</h3>
-      {item.excerpt && <p className="mt-2 leading-relaxed text-slate-400">{item.excerpt}</p>}
-      <div className="mt-5 flex items-center justify-between">
-        {item.engagement?.views ? (
-          <span className="inline-flex items-center gap-1.5 text-xs text-slate-500">
-            <Eye className="h-3.5 w-3.5" aria-hidden />{item.engagement.views}
-          </span>
-        ) : <span />}
-        {expandable && item.sourceUrl ? (
-          <a
-            href={item.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 transition-colors hover:text-bh-cyan"
-          >
-            Watch on YouTube <ExternalLink className="h-3 w-3" aria-hidden />
-          </a>
-        ) : (
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-bh-cyan">
-            Watch <ExternalLink className="h-3 w-3" aria-hidden />
-          </span>
-        )}
-      </div>
-    </div>
-  );
-
-  if (expandable) {
-    return (
-      <GlassCard>
-        <ExpandingPlayer item={item} />
-        {content}
+        </div>
+        <div className="p-5 sm:p-6">{text}</div>
       </GlassCard>
     );
   }
-  // No embed URL → the whole card links out; media is a static poster.
-  return (
-    <GlassCard href={item.sourceUrl}>
-      {media && (
-        <div className="relative aspect-[21/9] overflow-hidden bg-bh-ink">
-          <ThumbLayers media={media} broken={broken} onBroken={() => setBroken(true)} />
-          <span className="absolute inset-0 flex items-center justify-center"><PlayGlyph /></span>
-        </div>
-      )}
-      {content}
-    </GlassCard>
+
+  // Resting: horizontal row — thumbnail left, text right.
+  const row = (
+    <div className="flex items-start gap-4 p-3 sm:gap-5 sm:p-4">
+      <VideoThumb
+        item={item}
+        broken={broken}
+        onBroken={() => setBroken(true)}
+        onPlay={expandable ? () => setOpen(true) : undefined}
+      />
+      {text}
+    </div>
   );
+
+  // Embeddable → container div (the thumb button plays). Otherwise the whole card links out.
+  return expandable ? <GlassCard>{row}</GlassCard> : <GlassCard href={item.sourceUrl}>{row}</GlassCard>;
 }
 
 // ─── The card family ───────────────────────────────────────────────────────────
