@@ -61,11 +61,13 @@ uploads). **Patreon + Instagram fetchers are now BUILT** but inert until their c
 repo + fine-grained PAT + two Cloudflare Access apps + Worker secrets are set (see
 `hub-worker/README.md`). Do this and you (and the team) can edit all the above through `/admin`.
 
-**10. Marketplace** — now in the nav, with **three real product stubs** in `src/lib/data.ts` (all
-`status: "coming-soon"`), one per category:
-- **Blue Horizon — Blender Plugin** (Blender Plugins)
-- **Blue Horizon — Blender Analyser** (Tools & Scripts)
-- **Sci-fi Door Pack** (3D Assets — from the unfinished doors)
+**10. Marketplace** — now in the nav. Products in `src/lib/data.ts`:
+- ✅ **Visual Keyboard Editor** (Blender Plugins) — **LIVE, free**. Real listing (name, copy,
+  features, v0.1.0) with a working **Download** of `public/downloads/keyboard_proto-0.1.0.zip`.
+  *Only remaining:* real **screenshots** for the gallery (gradient placeholders for now), and — when
+  you rebuild the plugin — drop the new zip in `public/downloads/` and bump `version` + `changelog`.
+- ⏳ **Blue Horizon — Blender Analyser** (Tools & Scripts) — stub, `coming-soon`.
+- ⏳ **Sci-fi Door Pack** (3D Assets — from the unfinished doors) — stub, `coming-soon`.
 
 Each needs from you: real **name + tagline + description + features**, **pricing / licence tiers**,
 **compatibility**, and **gallery art** (screenshots/renders — a small `image` field still needs adding

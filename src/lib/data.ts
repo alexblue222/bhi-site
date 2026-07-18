@@ -161,22 +161,42 @@ export const PRODUCTS: Product[] = [
   //    Version + changelog are the "update history" buyers see; the STORE platform
   //    (Lemon Squeezy / Gumroad) delivers the actual updated file to purchasers.
   {
-    slug: "bhi-blender-plugin",
-    title: "Blue Horizon — Blender Plugin", // TODO: real product name
-    tagline: "TODO: one line on what the plugin does for you.",
+    slug: "visual-keyboard-editor",
+    title: "Visual Keyboard Editor",
+    tagline: "See and rebind every shortcut visually — including add-ons.",
     category: "Blender Plugins",
-    price: 0, // TODO: pricing (free base + paid tiers? single price?)
+    price: 0, // free — the open base of the Blue Horizon plugin family (GPL-3.0)
     thumbTint: "from-[#0a2a6b] via-[#123fd0] to-[#1a9fff]",
-    gallery: [{ tint: "from-[#0a2a6b] to-[#1a9fff]", label: "TODO — plugin screenshot" }],
-    description: ["TODO: what it does, who it's for, how it fits a Blender workflow."],
-    features: ["TODO: key feature", "TODO: key feature"],
-    compatibility: "Blender 4.2+", // TODO: confirm versions
+    gallery: [
+      { tint: "from-[#0a2a6b] via-[#123fd0] to-[#1a9fff]", label: "The visual keyboard" }, // TODO: real screenshots
+      { tint: "from-[#062036] to-[#0e7bd0]", label: "Rebind any shortcut" },
+      { tint: "from-[#0a1f5c] to-[#2e6bff]", label: "Searchable action library" },
+    ],
+    description: [
+      "See your whole keyboard at a glance. Visual Keyboard Editor draws Blender's shortcuts as a real, colour-coded keyboard — bound keys lit, empty keys dark — with Ctrl / Alt / Shift filters, so you can see exactly what every key does in every mode.",
+      "Rebind anything, safely. Click a key to inspect the operators on it, then change, disable or add a shortcut — including Blender's own native shortcuts and ones added by other add-ons. Every edit is reversible, and your bindings persist across restarts.",
+      "Find the command, not the key. Underneath sits a searchable library of every action in your Blender — filter by add-on or category, favourite the ones you use, hide the noise, and bind a shortcut straight from the list.",
+      "Free and open. This is the open base of the Blue Horizon plugin family — GPL-3.0, no account, no catch. Paid modules build on top of it.",
+    ],
+    features: [
+      "Full visual keyboard — colour-coded, GPU-drawn",
+      "Rebind native + add-on shortcuts, reversibly",
+      "Searchable action library (favourite · pin · hide)",
+      "Click-to-bind straight from the library",
+      "Bindings persist across restarts",
+      "Conflict detection built in",
+    ],
+    compatibility: "Blender 4.2+ · Windows / macOS / Linux",
     version: "0.1.0",
-    changelog: [{ version: "0.1.0", date: "2026-07-18", notes: "Placeholder listing created." }],
-    licenseTiers: [{ name: "TODO tier", price: 0 }],
-    buyMode: "direct",
+    changelog: [
+      { version: "0.1.0", date: "2026-06-29", notes: "First release — visual keyboard, native + add-on rebinding, searchable action library." },
+    ],
+    licenseTiers: [{ name: "Free", price: 0, note: "GPL-3.0 · free forever" }],
+    buyMode: "external",
+    externalUrl: "/downloads/keyboard_proto-0.1.0.zip",
+    externalLabel: "Download — free",
     maker: "alex-sheridan",
-    status: "coming-soon",
+    status: "available",
   },
   {
     slug: "bhi-blender-analyser",

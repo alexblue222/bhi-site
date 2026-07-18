@@ -69,9 +69,14 @@ export function BuyBox({ product }: { product: Product }) {
             </a>
           </>
         ) : product.buyMode === "external" ? (
-          <a href={product.externalUrl} target="_blank" rel="noopener noreferrer" className={primaryCls}>
+          // Free + same-origin file → a real download; paid → link out to the store in a new tab.
+          <a
+            href={product.externalUrl}
+            {...(tier.price === 0 ? { download: "" } : { target: "_blank", rel: "noopener noreferrer" })}
+            className={primaryCls}
+          >
             {product.externalLabel}
-            <ExternalLink className="h-4 w-4" aria-hidden />
+            {tier.price === 0 ? <Download className="h-4 w-4" aria-hidden /> : <ExternalLink className="h-4 w-4" aria-hidden />}
           </a>
         ) : (
           <button type="button" onClick={() => addToCart(product.slug, tier.name)} className={primaryCls}>
