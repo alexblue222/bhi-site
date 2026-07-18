@@ -128,22 +128,30 @@ function LatestFromHub({ items }: { items: FeedItem[] }) {
 
 // ─── Games (data + cards shared with /games — keep these exports stable) ─────
 
+// TODO(alex): real titles, pitches and cover art. Set `cover` to a screenshot path in
+// public/ and it replaces the gradient automatically (MediaTile falls back on a 404).
 export const GAMES = [
   {
     slug: "project-aurora",
     title: "Project Aurora",
     status: "In production · Unreal Engine",
     pitch: "A lone beacon lights the dark — cross a sleeping world and wake it one signal at a time.",
+    longPitch:
+      "A real-time exploration game in Unreal Engine 5. You are the signal: cross a dormant world, ignite the beacons sleeping in it, and watch the dark answer back. Traversal, atmosphere and light as a mechanic — the beacon the whole studio is named for, made playable.",
     tint: "from-[#0a2a6b] via-[#123fd0] to-[#1a9fff]",
-    tags: ["Real-time", "Unreal"],
+    tags: ["Real-time", "Unreal", "Exploration"],
+    cover: "",
   },
   {
     slug: "untitled-rpg",
     title: "Untitled RPG",
     status: "Prototype · Systems-first",
     pitch: "Mechanics before story, simulation before script — an RPG grown from its systems outward.",
+    longPitch:
+      "An early-stage RPG prototype. We build the simulation first — the rules, the systems, the way the world reacts — and let the story grow out of what emerges. Systems-first, story-second, and still finding its name.",
     tint: "from-[#0a1f5c] to-[#2e6bff]",
-    tags: ["Systems", "Design"],
+    tags: ["Systems", "Design", "Prototype"],
+    cover: "",
   },
 ];
 
@@ -166,17 +174,10 @@ export function GameCards({ detail = false }: { detail?: boolean }) {
               ))}
             </div>
             {detail && (
-              <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-white/5 pt-5">
+              <div className="mt-6 border-t border-white/5 pt-5">
                 <a href="/feed" className="py-2 text-sm font-medium text-bh-cyan transition-colors hover:text-slate-100">
                   Follow development in the feed →
                 </a>
-                <button
-                  type="button"
-                  disabled
-                  className="cursor-not-allowed rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-slate-500"
-                >
-                  Wishlist — soon
-                </button>
               </div>
             )}
           </div>

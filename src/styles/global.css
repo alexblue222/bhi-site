@@ -1,7 +1,15 @@
 @import "tailwindcss";
 
 /* Blue Horizon brand tokens (PROJECT.md §3) — exposed as Tailwind utilities:
-   text-bh-cyan, bg-bh-ink, border-bh-mid, font-display, font-body, font-brand … */
+   text-bh-cyan, bg-bh-ink, font-display, font-body, font-brand …
+   Palette decisions made explicit (2026-07-18):
+   · bh-ink (#01030a) is the CHOSEN page background — deliberately darker than the
+     brief's bh-bg (#0b0f16), which reads too light against the screen-blended planet.
+   · Neutral greys run on Tailwind's default `slate` ramp by design (a full, tuned
+     scale); bh-text is the base body colour. A blind slate→bh-text sweep was skipped
+     as zero-payoff churn.
+   · Depth surfaces are frosted glass (white/[0.02]); bh-navy/bh-mid/bh-charcoal are
+     kept as RESERVED depth tokens for when a solid-panel surface is wanted. */
 @theme {
   --color-bh-bg: #0b0f16;
   --color-bh-ink: #01030a;
