@@ -10,6 +10,9 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <GlassCard href={`/marketplace/${product.slug}`} className="flex h-full flex-col">
       <MediaTile tint={product.thumbTint} aspect="video" className="rounded-b-none">
+        {product.gallery[0]?.image && (
+          <img src={product.gallery[0].image} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+        )}
         {product.status === "coming-soon" && (
           <span className="absolute left-3 top-3 rounded-full border border-white/20 bg-black/50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-200 backdrop-blur-sm">
             Coming soon

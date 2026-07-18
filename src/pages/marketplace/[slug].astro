@@ -28,11 +28,19 @@ const mainTile = product.gallery[0] ?? { tint: product.thumbTint, label: product
   <section class="px-6 pb-24 pt-32">
     <div class="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.2fr_1fr]">
       <div>
-        <MediaTile tint={mainTile.tint} label={mainTile.label} aspect="video" />
+        <MediaTile tint={mainTile.tint} label={mainTile.image ? undefined : mainTile.label} aspect="video">
+          {mainTile.image && (
+            <img src={mainTile.image} alt={mainTile.label} loading="lazy" class="absolute inset-0 h-full w-full object-cover" />
+          )}
+        </MediaTile>
         {product.gallery.length > 1 && (
           <div class="mt-3 grid grid-cols-3 gap-3">
             {product.gallery.map((g) => (
-              <MediaTile tint={g.tint} label={g.label} aspect="video" />
+              <MediaTile tint={g.tint} label={g.image ? undefined : g.label} aspect="video">
+                {g.image && (
+                  <img src={g.image} alt={g.label} loading="lazy" class="absolute inset-0 h-full w-full object-cover" />
+                )}
+              </MediaTile>
             ))}
           </div>
         )}

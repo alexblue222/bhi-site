@@ -66,7 +66,7 @@ export interface Product {
   category: ProductCategory;
   price: number; // 0 = free
   thumbTint: string;
-  gallery: { tint: string; label: string }[];
+  gallery: { tint: string; label: string; image?: string }[]; // image overlays the tint when set
   description: string[];
   features: string[];
   compatibility: string;
@@ -168,15 +168,17 @@ export const PRODUCTS: Product[] = [
     price: 0, // free — the open base of the Blue Horizon plugin family (GPL-3.0)
     thumbTint: "from-[#0a2a6b] via-[#123fd0] to-[#1a9fff]",
     gallery: [
-      { tint: "from-[#0a2a6b] via-[#123fd0] to-[#1a9fff]", label: "The visual keyboard" }, // TODO: real screenshots
-      { tint: "from-[#062036] to-[#0e7bd0]", label: "Rebind any shortcut" },
-      { tint: "from-[#0a1f5c] to-[#2e6bff]", label: "Searchable action library" },
+      { tint: "from-[#0a2a6b] via-[#123fd0] to-[#1a9fff]", label: "The visual keyboard", image: "/products/visual-keyboard-editor/01-keyboard.png" },
+      { tint: "from-[#062036] to-[#0e7bd0]", label: "Every shortcut on a key", image: "/products/visual-keyboard-editor/02-inspect.png" },
+      { tint: "from-[#0a1f5c] to-[#2e6bff]", label: "Works with your other add-ons", image: "/products/visual-keyboard-editor/03-addons.png" },
     ],
     description: [
       "See your whole keyboard at a glance. Visual Keyboard Editor draws Blender's shortcuts as a real, colour-coded keyboard — bound keys lit, empty keys dark — with Ctrl / Alt / Shift filters, so you can see exactly what every key does in every mode.",
-      "Rebind anything, safely. Click a key to inspect the operators on it, then change, disable or add a shortcut — including Blender's own native shortcuts and ones added by other add-ons. Every edit is reversible, and your bindings persist across restarts.",
-      "Find the command, not the key. Underneath sits a searchable library of every action in your Blender — filter by add-on or category, favourite the ones you use, hide the noise, and bind a shortcut straight from the list.",
-      "Free and open. This is the open base of the Blue Horizon plugin family — GPL-3.0, no account, no catch. Paid modules build on top of it.",
+      "It works with all your other add-ons — that's the whole point. It doesn't just show Blender's built-in shortcuts; it reads every add-on you have installed. BoolTool, MachineTools, Node Wrangler — whatever you run, their operators and shortcuts all show up here, filterable by add-on, so you finally have one place to see and organise everything you've got.",
+      "Rebind anything, safely. Click a key to inspect every operator on it across all your modifiers, then change, disable or add a shortcut — including Blender's own native ones and those added by add-ons. Every edit is reversible, and your bindings persist across restarts.",
+      "Find the command, not the key. Underneath sits a searchable library of every action in your Blender (2,800+ and counting) — filter by add-on or category, favourite the ones you use, hide the noise, and bind a shortcut straight from the list.",
+      "A work in progress. This is an early, free release and still growing — if you hit a bug or something feels off, please send it in and I'll get it fixed and pushed out as an update. (A spot to report problems and leave comments is coming to this page.)",
+      "Free and open. The open base of the Blue Horizon plugin family — GPL-3.0, no account, no catch. Paid modules build on top of it.",
     ],
     features: [
       "Full visual keyboard — colour-coded, GPU-drawn",

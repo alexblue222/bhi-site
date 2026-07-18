@@ -1,0 +1,8 @@
+Save the 3 Visual Keyboard Editor screenshots here with these EXACT names:
+
+  01-keyboard.png  -> the full visual keyboard (colour-coded keys + script library)
+  02-inspect.png   -> a key selected (e.g. G) with the inspector showing its shortcuts
+  03-addons.png    -> the library filtered to another add-on (e.g. MachineTools) — the "works with other add-ons" shot
+
+The dev server shows them the instant you save. .jpg is fine too — just keep the
+same base name or update the paths in src/lib/data.ts (visual-keyboard-editor gallery).

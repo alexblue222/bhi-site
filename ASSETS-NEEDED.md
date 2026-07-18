@@ -64,8 +64,17 @@ repo + fine-grained PAT + two Cloudflare Access apps + Worker secrets are set (s
 **10. Marketplace** — now in the nav. Products in `src/lib/data.ts`:
 - ✅ **Visual Keyboard Editor** (Blender Plugins) — **LIVE, free**. Real listing (name, copy,
   features, v0.1.0) with a working **Download** of `public/downloads/keyboard_proto-0.1.0.zip`.
-  *Only remaining:* real **screenshots** for the gallery (gradient placeholders for now), and — when
-  you rebuild the plugin — drop the new zip in `public/downloads/` and bump `version` + `changelog`.
+  Description now emphasises it **works with your other add-ons** and that it's a WIP (report bugs).
+  *Screenshots:* the gallery is wired for 3 images — drop them in
+  `public/products/visual-keyboard-editor/` as `01-keyboard.png` / `02-inspect.png` / `03-addons.png`
+  (see the `_DROP-SCREENSHOTS-HERE.txt` there). Falls back to gradients until they land.
+  When you rebuild the plugin, drop the new zip in `public/downloads/` + bump `version` + `changelog`.
+
+**11. Product community features (deferred — Alex's ask)** — on each product page:
+- **Comment area** — users comment on the product. Needs a comments backend (or an embed).
+- **Problem/complaint reporting** — a user logs a technical issue; Alex fixes it and can reply with
+  the solution. Needs a form + storage + reply/notify flow (candidate: the hub Worker or an issue
+  tracker). Both intentionally held for later.
 - ⏳ **Blue Horizon — Blender Analyser** (Tools & Scripts) — stub, `coming-soon`.
 - ⏳ **Sci-fi Door Pack** (3D Assets — from the unfinished doors) — stub, `coming-soon`.
 
