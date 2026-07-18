@@ -44,3 +44,18 @@ body {
 h1, h2, h3, h4 {
   font-family: var(--font-display);
 }
+
+/* Keyboard focus — one visible beacon-cyan ring across every interactive element on the
+   dark surfaces (the browser default outline is near-invisible here). Only shows for
+   keyboard users (:focus-visible), never on mouse click. WCAG 2.4.7. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
+  outline: 2px solid var(--color-bh-cyan);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

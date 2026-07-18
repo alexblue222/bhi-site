@@ -6,14 +6,21 @@ import { Footer } from "../components/site/Footer";
 interface Props {
   title?: string;
   description?: string;
+  /** Absolute or root-relative image for social unfurls. Defaults to the brand card. */
+  ogImage?: string;
   /** True on pages with the scroll hero — the header logo waits for the dock hand-off. */
   hero?: boolean;
 }
 const {
   title = "Blue Horizon Interactive — Games of the Future",
   description = "Blue Horizon Interactive is an Irish studio building the games of the future — and the technology that renders them.",
+  ogImage = "/brand/og-card.png",
   hero = false,
 } = Astro.props;
+
+// Absolute URLs for canonical + social unfurls (Astro.site set in astro.config).
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImageAbs = new URL(ogImage, Astro.site).href;
 ---
 
 <!doctype html>
@@ -23,10 +30,26 @@ const {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
     <meta name="theme-color" content="#01030a" />
-    <meta property="og:title" content="Blue Horizon Interactive" />
-    <meta property="og:description" content="An Irish studio building the games of the future." />
+
+    <!-- Favicons (adaptive beacon mark) -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+
+    <!-- Open Graph / Twitter — real unfurls for the social hub -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Blue Horizon Interactive" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageAbs} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageAbs} />
+
     <!-- Michroma = the logo face (brand moments only) · Space Grotesk = display · Inter = body -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

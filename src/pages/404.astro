@@ -1,0 +1,33 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+<Layout title="Off the map — Blue Horizon Interactive" description="This signal has gone dark.">
+  <section class="relative flex min-h-[80vh] items-center justify-center overflow-hidden px-6">
+    <div
+      class="pointer-events-none absolute inset-x-0 top-1/2 h-px -translate-y-24"
+      style="background: linear-gradient(90deg, transparent, rgba(88,214,255,0.4), transparent)"
+    >
+    </div>
+    <div class="relative mx-auto max-w-md text-center">
+      <p class="font-display text-7xl font-semibold tracking-tight text-slate-100 sm:text-8xl">404</p>
+      <p class="mt-4 text-xs font-semibold uppercase tracking-[0.28em] text-bh-cyan">Off the map</p>
+      <p class="mt-4 leading-relaxed text-slate-400">
+        This signal has gone dark. The page you're after was moved, renamed, or never charted.
+      </p>
+      <div class="mt-9 flex flex-wrap items-center justify-center gap-3">
+        <a
+          href="/"
+          class="rounded-full border border-bh-blue/40 bg-bh-blue/10 px-6 py-3 text-sm font-medium text-[#bfe0ff] transition-colors hover:bg-bh-blue/20"
+        >
+          Back to the horizon
+        </a>
+        <a
+          href="/feed"
+          class="rounded-full border border-white/10 px-6 py-3 text-sm font-medium text-slate-300 transition-colors hover:text-slate-50"
+        >
+          Open the feed →
+        </a>
+      </div>
+    </div>
+  </section>
+</Layout>
