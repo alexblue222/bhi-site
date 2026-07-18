@@ -5,17 +5,18 @@
   "workers_dev": false, // no workers.dev subdomain registered on this account — custom domain only
   "routes": [
     { "pattern": "hub.bluehorizoninteractive.com", "custom_domain": true }
-  ]
+  ],
 
   // ── Activate the live feed + CMS (see API-SETUP.md). Uncomment + fill each block. ──
 
   // Plain vars (non-secret). Secrets go via `wrangler secret put <NAME>` — never here.
-  // "vars": {
-  //   "YOUTUBE_CHANNEL_ID": "UC...",              // your channel id
-  //   "PATREON_CAMPAIGN_ID": "",                   // optional; auto-discovered if blank
-  //   "ACCESS_TEAM_DOMAIN": "<team>.cloudflareaccess.com",
-  //   "ACCESS_AUD": "<access-app-aud-tag>"
-  // },
+  // YouTube is live below. Add PATREON_CAMPAIGN_ID / ACCESS_* here when those activate.
+  "vars": {
+    "YOUTUBE_CHANNEL_ID": "UCva26kcl1_jBBx_6NHHsabQ"
+    // "PATREON_CAMPAIGN_ID": "",                   // optional; auto-discovered if blank
+    // "ACCESS_TEAM_DOMAIN": "<team>.cloudflareaccess.com",
+    // "ACCESS_AUD": "<access-app-aud-tag>"
+  },
 
   // KV — persists the rotating Patreon/Instagram OAuth tokens across requests.
   // Create it: `npx wrangler kv namespace create HUB_KV` → paste the id below.
