@@ -119,7 +119,7 @@ export const ARTISTS: Artist[] = [
     bio: "Visual software architect. Games, tools and the technology that renders them — design first, always.",
     longBio: [
       "Alex founded Blue Horizon Interactive to build games and tools that feel like a glimpse of what's next. The studio's work spans real-time experiences in Unreal Engine, motion design, and the pipelines that connect them.",
-      "Current focus: Project Aurora, the Beacon Engine web renderer, and a growing family of Blender plugins.",
+      "Current focus: Codename Lyra — a first-person multiplayer horror game in Unreal Engine 5 — alongside a growing family of Blender plugins and the tools that render it all.",
     ],
     socials: [
       { platform: "youtube", href: "https://youtube.com/@bluehorizoninteractive" },
@@ -132,7 +132,7 @@ export const ARTISTS: Artist[] = [
       { label: "Planet plate — Blender", tint: "from-[#062036] to-[#0e7bd0]", medium: "Cinematics" },
       { label: "Bolted — hard-surface kit", tint: "from-[#08324a] to-[#1a9fff]", medium: "Plugins" },
       { label: "Brand system", tint: "from-[#0a1f5c] to-[#2e6bff]", medium: "Illustration" },
-      { label: "Aurora lighting study", tint: "from-[#241056] to-[#5b30c0]", medium: "Game art" },
+      { label: "Codename Lyra — lighting study", tint: "from-[#241056] to-[#5b30c0]", medium: "Game art" },
     ],
     featured: true,
   },
@@ -148,34 +148,6 @@ export const ARTISTS: Artist[] = [
       { label: "Character locomotion set", tint: "from-[#241056] to-[#5b30c0]", medium: "Game art", span: "sm:col-span-2" },
       { label: "Horizon Shorts — ep. 2", tint: "from-[#2a1060] to-[#7b4dd0]", medium: "Cinematics" },
       { label: "Creature study", tint: "from-[#101c4a] to-[#2e9bff]", medium: "Illustration" },
-    ],
-  },
-  {
-    slug: "pablo",
-    name: "Pablo",
-    role: "3D Artist",
-    initials: "P",
-    avatarTint: "from-[#062a4d] to-[#0e7bd0]",
-    bio: "Environments and hard-surface. Builds the places the games happen in.",
-    socials: [{ platform: "instagram", href: "https://instagram.com" }],
-    portfolio: [
-      { label: "Station exterior", tint: "from-[#062a4d] to-[#0e7bd0]", medium: "Game art", span: "sm:col-span-2" },
-      { label: "Env kit — modular halls", tint: "from-[#08324a] to-[#1a9fff]", medium: "Game art" },
-      { label: "Prop pass — Aurora", tint: "from-[#0a1f5c] to-[#2e6bff]", medium: "Game art" },
-    ],
-  },
-  {
-    slug: "bon",
-    name: "Bon",
-    role: "Illustration & Art",
-    initials: "B",
-    avatarTint: "from-[#5c2a10] to-[#ffb347]",
-    bio: "Key art, illustration and the warmer end of the palette.",
-    socials: [{ platform: "instagram", href: "https://instagram.com" }],
-    portfolio: [
-      { label: "Aurora key art", tint: "from-[#5c2a10] to-[#ffb347]", medium: "Illustration", span: "sm:col-span-2 sm:row-span-2" },
-      { label: "Poster series", tint: "from-[#3a1c08] to-[#ff9e6b]", medium: "Illustration" },
-      { label: "Character portraits", tint: "from-[#241056] to-[#5b30c0]", medium: "Illustration" },
     ],
   },
 ];

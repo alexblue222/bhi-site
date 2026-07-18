@@ -66,7 +66,7 @@ export function ArtistCard({ artist, hero = false }: { artist: RosterArtist; her
   if (hero) {
     // Featured artist — the monumental card at the top of the roster.
     return (
-      <GlassCard href={`/artists/${artist.slug}`} glow="amber" className="p-6 sm:p-10">
+      <GlassCard href={`/creators/${artist.slug}`} glow="amber" className="p-6 sm:p-10">
         {/* amber horizon-line — the human-surface counterpart of the beacon hairline */}
         <div
           className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-bh-amber/60 to-transparent"
@@ -100,7 +100,7 @@ export function ArtistCard({ artist, hero = false }: { artist: RosterArtist; her
   }
 
   return (
-    <GlassCard href={`/artists/${artist.slug}`} glow="amber" className="p-6">
+    <GlassCard href={`/creators/${artist.slug}`} glow="amber" className="p-6">
       <div className="flex items-center gap-4">
         <Avatar artist={artist} />
         <div className="min-w-0">

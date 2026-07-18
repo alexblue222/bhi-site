@@ -3,14 +3,14 @@ import { Menu, X } from "lucide-react";
 import { LogoMark } from "./LogoMark";
 import { Connect } from "../ui/Connect";
 
-// Launch IA (BUILD-SPEC): Home · Feed · Games · Artists · Studio. Marketplace is built but
-// out of nav until launch — routes stay live.
+// Primary IA: Home · Feed · Studio (projects) · Creators · Marketplace.
+// Studio = the games/worlds in production; Marketplace = the store.
 const NAV = [
   { label: "Home", href: "/" },
   { label: "Feed", href: "/feed" },
-  { label: "Games", href: "/games" },
-  { label: "Artists", href: "/artists" },
   { label: "Studio", href: "/studio" },
+  { label: "Creators", href: "/creators" },
+  { label: "Marketplace", href: "/marketplace" },
 ];
 
 export function Header({ hero = false }: { hero?: boolean }) {

@@ -81,7 +81,7 @@ export default function Spine() {
   useEffect(() => {
     // Clean node labels by section order (homepage: Feed · Games · Creators);
     // falls back to a trimmed heading for any extra sections.
-    const LABELS = ["Feed", "Games", "Creators"];
+    const LABELS = ["Feed", "Studio", "Creators"];
     const secs = Array.from(document.querySelectorAll<HTMLElement>("[data-section]"));
     setNodes(secs.map((el, i) => ({ label: LABELS[i] ?? ((el.querySelector("h2")?.textContent || "").trim().slice(0, 14) || "Section"), el })));
     const io = new IntersectionObserver(

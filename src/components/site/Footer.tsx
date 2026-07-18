@@ -6,14 +6,14 @@ const COLS = [
     h: "Explore",
     links: [
       { label: "Feed", href: "/feed" },
-      { label: "Games", href: "/games" },
-      { label: "Artists", href: "/artists" },
+      { label: "Studio", href: "/studio" },
+      { label: "Creators", href: "/creators" },
+      { label: "Marketplace", href: "/marketplace" },
     ],
   },
   {
     h: "Studio",
     links: [
-      { label: "Services", href: "/studio" },
       { label: "About", href: "/about" },
       { label: "Contact", href: "/contact" },
     ],

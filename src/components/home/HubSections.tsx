@@ -132,25 +132,14 @@ function LatestFromHub({ items }: { items: FeedItem[] }) {
 // public/ and it replaces the gradient automatically (MediaTile falls back on a 404).
 export const GAMES = [
   {
-    slug: "project-aurora",
-    title: "Project Aurora",
-    status: "In production · Unreal Engine",
-    pitch: "A lone beacon lights the dark — cross a sleeping world and wake it one signal at a time.",
+    slug: "codename-lyra",
+    title: "Codename Lyra",
+    status: "In production · Unreal Engine 5",
+    pitch: "A first-person multiplayer horror game — survive the dark together, where light is your only edge.",
     longPitch:
-      "A real-time exploration game in Unreal Engine 5. You are the signal: cross a dormant world, ignite the beacons sleeping in it, and watch the dark answer back. Traversal, atmosphere and light as a mechanic — the beacon the whole studio is named for, made playable.",
+      "Codename Lyra is a first-person multiplayer horror game built in Unreal Engine 5. Move through a hostile facility with others, ration your light against the things that hunt in the dark, and try to make it out together. Everything we model, rig and light for it ships to the feed as devlogs while the build comes together.",
     tint: "from-[#0a2a6b] via-[#123fd0] to-[#1a9fff]",
-    tags: ["Real-time", "Unreal", "Exploration"],
-    cover: "",
-  },
-  {
-    slug: "untitled-rpg",
-    title: "Untitled RPG",
-    status: "Prototype · Systems-first",
-    pitch: "Mechanics before story, simulation before script — an RPG grown from its systems outward.",
-    longPitch:
-      "An early-stage RPG prototype. We build the simulation first — the rules, the systems, the way the world reacts — and let the story grow out of what emerges. Systems-first, story-second, and still finding its name.",
-    tint: "from-[#0a1f5c] to-[#2e6bff]",
-    tags: ["Systems", "Design", "Prototype"],
+    tags: ["Multiplayer", "Horror", "Unreal Engine 5"],
     cover: "",
   },
 ];
@@ -160,7 +149,7 @@ export function GameCards({ detail = false }: { detail?: boolean }) {
   return (
     <div className="grid gap-6 md:grid-cols-2">
       {GAMES.map((g) => (
-        <GlassCard key={g.slug} href={detail ? undefined : "/games"}>
+        <GlassCard key={g.slug} href={detail ? undefined : "/studio"}>
           <MediaTile tint={g.tint} aspect="wide" label={g.title} className="rounded-b-none" />
           <div className="p-6">
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-bh-cyan/80">{g.status}</p>
@@ -189,7 +178,7 @@ export function GameCards({ detail = false }: { detail?: boolean }) {
 
 function FeaturedGames() {
   return (
-    <Section eyebrow="Interactive" title="Featured games" viewAll={{ href: "/games", label: "All games" }}>
+    <Section eyebrow="Interactive" title="Featured games" viewAll={{ href: "/studio", label: "The studio" }}>
       <div data-reveal>
         <GameCards />
       </div>
@@ -201,13 +190,13 @@ function FeaturedGames() {
 
 function ArtistsPreview({ artists }: { artists: HomeArtist[] }) {
   return (
-    <Section eyebrow="The people" title="Meet the artists" accent="amber" viewAll={{ href: "/artists", label: "Full roster" }}>
+    <Section eyebrow="The people" title="Meet the creators" accent="amber" viewAll={{ href: "/creators", label: "Full roster" }}>
       {artists.length ? (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {artists.map((a) => (
             <a
               key={a.slug}
-              href={`/artists/${a.slug}`}
+              href={`/creators/${a.slug}`}
               data-reveal
               className="group rounded-2xl border border-white/10 bg-white/[0.02] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-bh-amber/40 hover:shadow-[0_0_32px_-12px_rgba(255,179,71,0.35)]"
             >

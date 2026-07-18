@@ -1,123 +1,66 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import PageIntro from "../components/site/PageIntro.astro";
-import { GlassCard } from "../components/ui/GlassCard";
-import { SectionHead } from "../components/ui/SectionHead";
+import { MediaTile } from "../components/ui/MediaTile";
 import { Connect } from "../components/ui/Connect";
-import { Clapperboard, Boxes, Wrench, Sparkles } from "lucide-react";
-
-// The four service arms. Capability-focused — no invented clients or prices; Alex fills
-// case studies + rates when real.
-const services = [
-  {
-    icon: Clapperboard,
-    title: "Cinematics & trailers",
-    body: "Announce trailers, in-engine cinematics and story beats rendered in Unreal Engine — from beat-board and blocking through to the final grade.",
-  },
-  {
-    icon: Boxes,
-    title: "Real-time & Unreal",
-    body: "Playable prototypes, tech demos and interactive experiences built in Unreal 5 — the same pipeline that renders our own games, pointed at yours.",
-  },
-  {
-    icon: Wrench,
-    title: "Tools & pipelines",
-    body: "Blender and Unreal tooling, render pipelines and automation that turn a slow manual process into a repeatable one your team can run without us.",
-  },
-  {
-    icon: Sparkles,
-    title: "Technical art & motion",
-    body: "Shaders, procedural systems and motion design — the finish that makes real-time work read as premium instead of merely rendered.",
-  },
-];
-
-const process = [
-  { n: "01", title: "Scope", body: "We map the shot list, the deliverables and the constraints before a single frame renders — so the budget buys the right thing." },
-  { n: "02", title: "Build in the open", body: "You see work-in-progress renders at every beat, not a reveal at the end. Course-correct while it's cheap." },
-  { n: "03", title: "Ship & hand off", body: "Final assets, source files and the pipeline to run them again — yours to keep, not a black box you have to come back to." },
-];
-
-const stack = ["Unreal Engine 5", "Blender", "Cavalry", "DaVinci Resolve", "Python tooling", "Real-time rendering"];
+import { GAMES } from "../components/home/HubSections";
 ---
 
 <Layout
   title="Studio — Blue Horizon Interactive"
-  description="The craft arm of Blue Horizon Interactive — cinematics, real-time experiences, tools and pipelines, for hire."
+  description="The games and real-time worlds in production at Blue Horizon Interactive."
 >
   <PageIntro
-    eyebrow="Studio"
-    title="The craft arm"
-    sub="Cinematics, real-time experiences, tools and pipelines. The engineering and artistry behind our own games — available for yours."
+    eyebrow="The Studio"
+    title="Worlds in production"
+    sub="The games and real-time worlds we're building — designed to feel like a glimpse of what's next. Follow every one as it comes together, devlog by devlog."
     wip={false}
   />
 
-  <!-- Services -->
   <section class="border-t border-white/5 px-6 py-24">
-    <div class="mx-auto max-w-6xl">
-      <SectionHead
-        eyebrow="What we do"
-        title="Four arms, one pipeline"
-        sub="Everything the studio ships for hire runs on the same tools we use to build Blue Horizon's own worlds."
-      />
-      <div class="mt-14 grid gap-6 sm:grid-cols-2">
-        {services.map((s) => (
-          <GlassCard className="p-8">
-            <s.icon className="h-7 w-7 text-bh-cyan" />
-            <h3 class="mt-5 text-xl font-semibold text-slate-100">{s.title}</h3>
-            <p class="mt-3 leading-relaxed text-slate-400">{s.body}</p>
-          </GlassCard>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <!-- Process -->
-  <section class="border-t border-white/5 px-6 py-24">
-    <div class="mx-auto max-w-6xl">
-      <SectionHead eyebrow="How we work" title="No black boxes" align="left" />
-      <div class="mt-14 grid gap-10 md:grid-cols-3">
-        {process.map((p) => (
-          <div>
-            <p class="font-display text-sm font-semibold tracking-[0.3em] text-bh-blue/70">{p.n}</p>
-            <h3 class="mt-3 text-lg font-semibold text-slate-100">{p.title}</h3>
-            <p class="mt-3 leading-relaxed text-slate-400">{p.body}</p>
+    <div class="mx-auto max-w-6xl space-y-24">
+      {GAMES.map((g, i) => (
+        <article class="grid items-center gap-10 md:grid-cols-2">
+          {/* art — alternates side on desktop; set g.cover to a screenshot to replace the gradient */}
+          <div class={i % 2 === 1 ? "md:order-2" : ""}>
+            <MediaTile tint={g.tint} aspect="video" label={!g.cover ? g.title : undefined} className="w-full ring-1 ring-white/10">
+              {g.cover && (
+                <img src={g.cover} alt={`${g.title} — screenshot`} loading="lazy" class="absolute inset-0 h-full w-full object-cover" />
+              )}
+            </MediaTile>
           </div>
-        ))}
-      </div>
+          <div class={i % 2 === 1 ? "md:order-1" : ""}>
+            <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-bh-cyan/80">{g.status}</p>
+            <h2 class="mt-2 font-display text-3xl font-semibold text-slate-100 sm:text-4xl">{g.title}</h2>
+            <p class="mt-4 leading-relaxed text-slate-400">{g.longPitch ?? g.pitch}</p>
+            <div class="mt-5 flex flex-wrap gap-2">
+              {g.tags.map((t) => (
+                <span class="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-400">{t}</span>
+              ))}
+            </div>
+            <a
+              href="/feed"
+              class="mt-7 inline-flex items-center gap-2 rounded-full border border-bh-blue/40 bg-bh-blue/10 px-6 py-3 text-sm font-medium text-[#bfe0ff] transition-colors hover:bg-bh-blue/20"
+            >
+              Follow development in the feed <span aria-hidden>→</span>
+            </a>
+          </div>
+        </article>
+      ))}
     </div>
   </section>
 
-  <!-- Stack -->
-  <section class="border-t border-white/5 px-6 py-24">
-    <div class="mx-auto max-w-6xl">
-      <SectionHead eyebrow="The stack" title="Tools we live in" align="left" />
-      <div class="mt-8 flex flex-wrap gap-2.5">
-        {stack.map((t) => (
-          <span class="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-slate-300">{t}</span>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA -->
+  <!-- Closer -->
   <section class="border-t border-white/5 px-6 py-24">
     <div class="mx-auto max-w-3xl text-center">
-      <h2 class="text-3xl font-semibold text-slate-100 sm:text-4xl">Have a project on the horizon?</h2>
+      <p class="text-xs font-semibold uppercase tracking-[0.28em] text-bh-cyan">More on the horizon</p>
       <p class="mx-auto mt-4 max-w-lg leading-relaxed text-slate-400">
-        Trailer, prototype, tool or pipeline — tell us what you're building and we'll tell you how we'd render it.
+        This is the world in the open. More are in the dark, not yet lit — every build ships its
+        devlogs to the feed as it comes together.
       </p>
-      <a
-        href="/contact"
-        class="mt-9 inline-flex items-center gap-2 rounded-full border border-bh-blue/40 bg-bh-blue/10 px-7 py-3.5 text-sm font-medium text-[#bfe0ff] transition-colors hover:bg-bh-blue/20"
-      >
-        Start a conversation <span aria-hidden>→</span>
-      </a>
-    </div>
-  </section>
-
-  <section class="border-t border-white/5 px-6 py-24">
-    <div class="mx-auto max-w-6xl">
-      <Connect />
+      <div class="mt-10 flex justify-center">
+        <Connect compact />
+      </div>
     </div>
   </section>
 </Layout>

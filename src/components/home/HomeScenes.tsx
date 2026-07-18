@@ -31,8 +31,8 @@ type Scene = {
 // The Mars sweep + crane play as one cinematic transition between the last two.
 const SCENES: Scene[] = [
   { id: "feed", eyebrow: "Transmissions", title: "The Feed", body: "Every video, drop and devlog — the whole signal, in one stream.", cta: { href: "/feed", label: "Open the feed" }, accent: "#58d6ff", side: "right" },
-  { id: "games", eyebrow: "In production", title: "The Games", body: "The interactive worlds we're building — and the tech that renders them.", cta: { href: "/games", label: "Explore the games" }, accent: "#58d6ff", side: "left" },
-  { id: "artists", eyebrow: "The people", title: "The Creators", body: "The artists and builders behind Blue Horizon.", cta: { href: "/artists", label: "Meet the creators" }, accent: "#ffb347", side: "right" },
+  { id: "studio", eyebrow: "In production", title: "The Studio", body: "The games and real-time worlds we're building — and the tech that renders them.", cta: { href: "/studio", label: "Enter the studio" }, accent: "#58d6ff", side: "left" },
+  { id: "artists", eyebrow: "The people", title: "The Creators", body: "The people building Blue Horizon.", cta: { href: "/creators", label: "Meet the creators" }, accent: "#ffb347", side: "right" },
 ];
 
 // The whole 1–1200 choreography at stride 2 (see bh_publish_frames.py "master").

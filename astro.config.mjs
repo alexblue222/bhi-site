@@ -13,6 +13,13 @@ export default defineConfig({
   // markup → hydration mismatch (#418). Gzip makes compression moot anyway.
   compressHTML: false,
 
+  // IA rename (2026-07): Games→Studio, Artists→Creators. Old paths keep working.
+  redirects: {
+    '/games': '/studio',
+    '/artists': '/creators',
+    '/artists/[slug]': '/creators/[slug]',
+  },
+
   integrations: [react()],
 
   vite: {

@@ -27,7 +27,7 @@ portfolio:
   - label: "Brand system"
     tint: "from-[#0a1f5c] to-[#2e6bff]"
     medium: Illustration
-  - label: "Aurora lighting study"
+  - label: "Codename Lyra — lighting study"
     tint: "from-[#241056] to-[#5b30c0]"
     medium: Game art
 featured: true
@@ -36,4 +36,4 @@ order: 1
 
 Alex founded Blue Horizon Interactive to build games and tools that feel like a glimpse of what's next. The studio's work spans real-time experiences in Unreal Engine, motion design, and the pipelines that connect them.
 
-Current focus: Project Aurora, the Beacon Engine web renderer, and a growing family of Blender plugins.
+Current focus: Codename Lyra — a first-person multiplayer horror game in Unreal Engine 5 — alongside a growing family of Blender plugins and the tools that render it all.
