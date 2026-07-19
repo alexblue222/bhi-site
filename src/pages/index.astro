@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { LoadingScreen } from "../components/site/LoadingScreen.tsx";
 import HeroStage from "../components/hero/HeroStage.tsx";
 import Spine from "../components/hero/Spine.tsx";
 import HomeScenes from "../components/home/HomeScenes.tsx";
@@ -8,6 +9,7 @@ import HomeScenes from "../components/home/HomeScenes.tsx";
 ---
 
 <Layout hero>
+  <LoadingScreen client:load />
   <HeroStage client:only="react" />
   <Spine client:only="react" />
   {/* transparent so the fixed master planet layer (z-5, portaled by HomeScenes)
