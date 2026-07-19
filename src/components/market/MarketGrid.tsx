@@ -60,7 +60,16 @@ export function MarketGrid() {
       {/* Featured banner — hidden while a category filter is active */}
       {showFeatured && (
         <GlassCard href={`/marketplace/${featured.slug}`} className="mb-6 grid md:grid-cols-[1.1fr_1fr]">
-          <MediaTile tint={featured.thumbTint} label={featured.gallery[0]?.label} aspect="video" className="rounded-none" />
+          <MediaTile
+            tint={featured.thumbTint}
+            label={featured.gallery[0]?.image ? undefined : featured.gallery[0]?.label}
+            aspect="video"
+            className="rounded-none"
+          >
+            {featured.gallery[0]?.image && (
+              <img src={featured.gallery[0].image} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+            )}
+          </MediaTile>
           <div className="flex flex-col p-6 sm:p-8">
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-bh-cyan/80">
               Featured · {featured.category}
