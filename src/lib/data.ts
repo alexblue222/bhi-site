@@ -237,7 +237,7 @@ export const PRODUCTS: Product[] = [
     externalUrl: "https://bluehorizon.gumroad.com", // TODO: point at the exact Gumroad product URL once uploaded
     externalLabel: "Get it free (Windows)",
     maker: "alex-sheridan",
-    status: "available",
+    status: "coming-soon", // launch state — flip to "available" once the installer is on Gumroad + externalUrl points at it
   },
   {
     slug: "bhi-door-pack",
