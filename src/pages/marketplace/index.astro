@@ -1,21 +1,84 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import PageIntro from "../../components/site/PageIntro.astro";
 import { MarketGrid } from "../../components/market/MarketGrid";
 import { CartDrawer } from "../../components/market/CartDrawer";
+import { PRODUCTS, formatPrice } from "../../lib/data";
+
+// Hero spotlights the flagship (first product) with its real screenshot; the grid below
+// shows the whole catalogue. Keep PRODUCTS[0] as the product you want featured.
+const flagship = PRODUCTS[0];
+const shot = flagship.gallery.find((g) => g.image) ?? flagship.gallery[0];
 ---
 
 <Layout
   title="Marketplace — Blue Horizon Interactive"
-  description="Plugins, assets and shaders made in production at Blue Horizon — sold directly from the workshop."
+  description="Plugins, scripts and assets we built for our own pipeline while making our games — some free, some paid."
 >
-  <PageIntro
-    eyebrow="Marketplace"
-    title="Tools from the workshop"
-    sub="Plugins, assets and shaders made in production on our own projects — sold directly, and updated for as long as we use them ourselves."
-    wip={false}
-  />
-  <section class="border-t border-white/5 px-6 py-24">
+  <!-- Hero: copy + a glowing flagship screenshot over the beacon motif -->
+  <section class="relative overflow-hidden px-6 pb-20 pt-36 sm:pt-44">
+    <div
+      class="pointer-events-none absolute inset-x-0 top-0 h-px"
+      style="background: linear-gradient(90deg, transparent, rgba(46,155,255,0.5), transparent)"
+    >
+    </div>
+    <div
+      class="pointer-events-none absolute left-1/2 top-[-18rem] h-[32rem] w-[48rem] -translate-x-1/2 rounded-full bg-bh-blue/10 blur-[130px]"
+    >
+    </div>
+
+    <div class="relative mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1fr_1.05fr]">
+      <!-- copy -->
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.3em] text-bh-cyan">The workshop</p>
+        <h1 class="mt-5 font-display text-5xl font-semibold tracking-tight text-slate-100 sm:text-6xl">
+          Tools from the<br class="hidden sm:block" /> workshop
+        </h1>
+        <p class="mt-6 max-w-lg leading-relaxed text-slate-400">
+          Plugins, scripts and assets we built for our own pipeline while making our games — some
+          free, some paid, and updated for as long as we keep using them ourselves.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-2.5">
+          {["Blender plugins", "Tools & scripts", "3D assets"].map((t) => (
+            <span class="rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-xs font-medium text-slate-300">
+              {t}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <!-- flagship screenshot -->
+      <a href={`/marketplace/${flagship.slug}`} class="group relative block">
+        <div class="pointer-events-none absolute -inset-5 rounded-[2rem] bg-bh-blue/10 blur-2xl"></div>
+        <div
+          class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] shadow-[0_0_60px_-20px_rgba(46,155,255,0.55)] transition-transform duration-500 group-hover:-translate-y-1"
+        >
+          {shot?.image ? (
+            <img
+              src={shot.image}
+              alt={`${flagship.title} — screenshot`}
+              class="aspect-video w-full object-cover"
+              loading="eager"
+            />
+          ) : (
+            <div class={`aspect-video w-full bg-gradient-to-br ${flagship.thumbTint}`}></div>
+          )}
+          <div
+            class="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-5 pt-10"
+          >
+            <div class="min-w-0">
+              <p class="text-[10px] font-semibold uppercase tracking-[0.22em] text-bh-cyan/90">Featured</p>
+              <p class="truncate font-display text-lg font-semibold text-slate-100">{flagship.title}</p>
+            </div>
+            <span class="shrink-0 rounded-full bg-bh-cyan/90 px-3 py-1 text-xs font-semibold text-black">
+              {formatPrice(flagship.price)}
+            </span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <section class="border-t border-white/5 px-6 pb-28 pt-16">
     <div class="mx-auto max-w-6xl">
       <MarketGrid client:load />
     </div>
